@@ -31,6 +31,42 @@
 
 详见 [PLAN.md](PLAN.md) 的 §2.5 代码地图和 §2.6 改动日志。
 
+## 快速部署
+
+本项目已包含完整的第三方仓库代码，服务器端可直接 clone 使用：
+
+```bash
+# 1. 克隆项目
+git clone https://github.com/dav627/OPDR1.git
+cd OPDR1
+
+# 2. 配置环境（参考 OPD实验实现文档.md §3.1）
+conda create -n rl-opd python=3.9 -y
+conda activate rl-opd
+pip install torch==2.4.0 --index-url https://download.pytorch.org/whl/cu121
+pip install vllm==0.6.3 wandb huggingface_hub transformers<4.48
+
+# 3. 安装 veRL（ZeroSearch 已包含 OPD 改动）
+cd ZeroSearch
+pip install -e .
+
+# 4. 准备模型和数据（参考 COMMANDS.md）
+# 模型下载到 /root/autodl-tmp/models/
+# 数据下载到 /root/autodl-tmp/data/
+
+# 5. 运行训练（参考 COMMANDS.md）
+bash train_grpo.sh  # RL 基线
+bash train_opd.sh   # OPD 蒸馏
+```
+
+**项目结构：**
+- `ZeroSearch/` — 主框架（已包含 OPD 改动）
+- `Search-R1/` — 参考实现 + OPD 老师模型来源
+- `StepSearch/` — 过程奖励（可选）
+- `tests/` — 单元测试
+- `PLAN.md` — 实施计划与代码地图
+- `COMMANDS.md` — 训练命令参考
+
 ## 训练命令
 
 见 [COMMANDS.md](COMMANDS.md)。
