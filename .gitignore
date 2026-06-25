@@ -4,6 +4,8 @@ __pycache__/
 .pytest_cache/
 *.egg-info/
 .DS_Store
-ZeroSearch/
-Search-R1/
-StepSearch/
+
+# 第三方仓库已纳入版本控制
+# ZeroSearch/
+# Search-R1/
+# StepSearch/

@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <!-- Meta tags for social media banners, these should be filled in appropriatly as they are your "business card" -->
+  <!-- Replace the content tag with appropriate information -->
+  <meta name="description" content="DESCRIPTION META TAG">
+  <meta property="og:title" content="SOCIAL MEDIA TITLE TAG" />
+  <meta property="og:description" content="SOCIAL MEDIA DESCRIPTION TAG TAG" />
+  <meta property="og:url" content="URL OF THE WEBSITE" />
+  <!-- Path to banner image, should be in the path listed below. Optimal dimenssions are 1200X630-->
+  <meta property="og:image" content="static/image/your_banner_image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+
+
+  <meta name="twitter:title" content="TWITTER BANNER TITLE META TAG">
+  <meta name="twitter:description" content="TWITTER BANNER DESCRIPTION META TAG">
+  <!-- Path to banner image, should be in the path listed below. Optimal dimenssions are 1200X600-->
+  <meta name="twitter:image" content="static/images/your_twitter_banner_image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- Keywords for your paper to be indexed by-->
+  <meta name="keywords" content="KEYWORDS SHOULD BE PLACED HERE">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+  <title>ZeroSearch</title>
+  <link rel="icon" href="https://img.alicdn.com/imgextra/i4/O1CN01FOwagl1XBpyVA2QVy_!!6000000002886-2-tps-512-512.png"/>
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro" rel="stylesheet">
+
+  <link rel="stylesheet" href="static/css/bulma.min.css">
+  <link rel="stylesheet" href="static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="static/css/fontawesome.all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="static/css/index.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://documentcloud.adobe.com/view-sdk/main.js"></script>
+  <script defer src="static/js/fontawesome.all.min.js"></script>
+  <script src="static/js/bulma-carousel.min.js"></script>
+  <script src="static/js/bulma-slider.min.js"></script>
+  <script src="static/js/index.js"></script>
+  <style>
+    .findings-box {
+      border: 2px solid #d0d9e0;
+      border-radius: 8px;
+      padding: 10px 15px;
+      display: inline-block;
+      font-family: Georgia, "Times New Roman", Times, serif;
+      font-size: 16px;
+      line-height: 1.5;
+      background-color: #f9f9f9;
+    }
+
+    .findings-box .title {
+      font-weight: bold;
+      text-decoration: underline;
+      font-size: 18px;
+    }
+
+    .findings-box .content {
+      font-style: italic;
+    }
+  </style>
+</head>
+
+<body>
+
+
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <h1 class="title is-2 publication-title">ZeroSearch: Incentivize the Search Capability of LLMs without Searching</h1>
+            <div class="is-size-5 publication-authors">
+              <!-- Paper authors -->
+              <span class="author-block"><a href="https://sunhaonlp.github.io/" target="_blank">Hao Sun</a>,</span>
+              <span class="author-block">Zile Qiao<sup>&dagger;</sup>,</span>
+              <span class="author-block">Jiayan Guo<sup>&dagger;</sup>,</span>
+              <span class="author-block">Xuanbo Fan,</span>
+              <span class="author-block">Yingyan Hou</span>
+              <br>
+              <span class="author-block">Yong Jiang,</span>
+              <span class="author-block">Pengjun Xie,</span>
+              <span class="author-block">Yan Zhang<sup>&dagger;</sup>,</span>
+              <span class="author-block">Fei Huang,</span>
+              <span class="author-block">Jingren Zhou</span>
+
+            </div>
+
+            <div class="is-size-5 publication-authors">
+              sunhao@stu.pku.edu.cn
+              <br>
+              <span class="author-block"><b>Tongyi Lab <img src="static/images/tongyi.jpg" alt="Tongyi Logo" style="width: 20px; height: 20px;"/>
+                , Alibaba Group</b></span>
+<!--              <span class="eql-cntrb"><small><br><sup>*</sup>Work done during internship at Tongyi Lab, Alibaba Group.</small></span>-->
+            </div>
+
+                <!-- Arxiv PDF link -->
+                <span class="link-block">
+                  <a href="https://arxiv.org/pdf/2505.04588" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fas fa-file-pdf"></i>
+                    </span>
+                    <span>Paper</span>
+                  </a>
+                </span>
+
+                <!-- Github link -->
+                <span class="link-block">
+                  <a href="https://github.com/Alibaba-nlp/ZeroSearch" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fab fa-github"></i>
+                    </span>
+                    <span>Code</span>
+                  </a>
+                </span>
+
+                <span class="link-block">
+                  <a href="https://huggingface.co/datasets/sunhaonlp/ZeroSearch_dataset" target="_blank"
+                  class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <img src="static/images/db.svg" alt="Hugging Face Logo" style="width: 20px; height: 20px;"/>
+                  </span>
+                    <span>Dataset</span>
+                  </a>
+                </span>
+
+
+                <span class="link-block">
+                  <a href="https://huggingface.co/collections/sunhaonlp/zerosearch-v2-6827f4ee6b6265069d443d4e" target="_blank"
+                  class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <img src="static/images/hf-logo.png" alt="Hugging Face Logo" style="width: 20px; height: 20px;"/>
+                  </span>
+                    <span>Model</span>
+                  </a>
+                </span>
+
+                    
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Paper abstract -->
+  <section class="section hero is-light">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered has-text-centered">
+        <div class="column is-four-fifths">
+          <h2 class="title is-3">Abstract</h2>
+          <div class="content has-text-justified">
+            <p>
+              Effective information searching is essential for enhancing the reasoning and generation capabilities of large language models (LLMs). Recent research has explored using reinforcement learning (RL) to improve LLMs' search capabilities by interacting with live search engines in real-world environments. While these approaches show promising results, they face two major challenges:
+(1) <b style="color:#615ced;">Uncontrolled Document Quality</b>: The quality of documents returned by search engines is often unpredictable, introducing noise and instability into the training process.
+(2) <b style="color:#615ced;">Prohibitively High API Costs</b>: RL training requires frequent rollouts, potentially involving hundreds of thousands of search requests, which incur substantial API expenses and severely constrain scalability.
+To address these challenges, we introduce <b style="color:#615ced;">ZeroSearch</b>, a novel RL framework that <b style="color:#615ced;">incentivizes the capabilities of LLMs to use a real search engine with simulated searches during training</b>.
+Our approach begins with lightweight supervised fine-tuning to transform the LLM into a retrieval module capable of generating both useful and noisy documents in response to a query.
+During RL training, we employ a curriculum-based rollout strategy that incrementally degrades the quality of generated documents, progressively eliciting the model’s reasoning ability by exposing it to increasingly challenging retrieval scenarios.
+Extensive experiments demonstrate that <b style="color:#615ced;">ZeroSearch effectively incentivizes the search capabilities of LLMs using a 3B LLM as the retrieval module</b>.
+Remarkably, a 7B retrieval module achieves comparable performance to the real search engine, while a 14B retrieval module even surpasses it.
+Furthermore, it generalizes well across both base and instruction-tuned models of various parameter sizes and is compatible with a wide range of RL algorithms.
+            </p>
+          </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- End paper abstract -->
+
+  <section class="section" id="Overview">
+  <div class="container is-max-desktop content">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-five-fifths">
+        <h2 class="title is-3">🌟Overview</h2>
+        <div class="content has-text-justified">
+          <p>
+            🔍 We propose ZeroSearch, a novel reinforcement learning framework that incentivizes the capability of LLMs to use real search engines without interacting with them during training.
+          </p>
+          <p>
+            🤖 Through supervised fine-tuning, we transform the LLM into a retrieval module capable of generating both useful and noisy documents in response to a query. We further introduce a curriculum rollout mechanism to progressively elicit the model’s reasoning ability by exposing it to increasingly challenging retrieval scenarios.
+          </p>
+          <p>
+            📊 We conduct extensive experiments on both in-domain and out-of-domain datasets. Results show that ZeroSearch outperforms real search engine-based models while incurring zero API cost. Moreover, it generalizes well across both base and instruction-tuned LLMs of various parameter sizes and supports different reinforcement learning algorithms.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div> <!-- Added closing tag here -->
+</section>
+
+
+<!-- Framework -->
+<section class="section" id="Framework">
+  <div class="container is-max-desktop content">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-five-fifths">
+        <h2 class="title is-3">🔍 ZeroSearch</h2>
+        <img src="static/images/model.jpg" width="80%">
+        <div class="content has-text-justified">
+
+          <p>
+            <b style="color:#615ced;">Reinforcement Learning without a Search Engine</b> We propose a reinforcement learning framework that eliminates the need for a real search engine by leveraging an LLM to simulate the search engine. The optimization objective is formulated as:
+          </p>
+          <p>
+            \[
+            \max_{\pi_\theta}
+            \mathbb{E}_{x \sim \mathcal{D},\,y \sim \pi_{\theta}(\cdot \mid x; \pi_{\psi})}
+            \bigl[\,r_{\phi}(x, y)\bigr]
+            \;-\;\beta\,\mathrm{D}_{\mathrm{KL}}\bigl[\pi_{\theta}(y \mid x; \pi_{\psi}) \,\big\|\, \pi_{\mathrm{ref}}(y \mid x; \pi_{\psi})\bigr],
+            \]
+          </p>
+          <p>
+            where \(\pi_{\theta}\) is the policy model to be optimized, \(\pi_{\mathrm{ref}}\) is the reference model, and \(r_{\phi}\) denotes the reward function. \(\pi_{\psi}\) represents the simulation LLM, whose parameters remain fixed throughout training.
+          </p>
+
+          <p>
+            <b style="color:#615ced;">Search Simulation Tuning</b> We propose a lightweight supervised fine-tuning (SFT) procedure. Specifically, we first collect interaction trajectories by prompting the LLM to engage with a real search engine in a multi-turn manner until a final answer is reached.
+            From these trajectories, we extract query-document pairs and employ the LLM as the judge to independently assess whether each document contains sufficient information to answer the corresponding query.
+            Then, we perform lightweight SFT to enhance the LLM’s ability to generate both useful and noisy outputs in response to queries.
+          </p>
+
+          <p>
+            <b style="color:#615ced;">Rollout with Curriculum Search Simulation</b> During rollout, the policy model performs interactive reasoning and generates search queries, which are fed into the simulation LLM to produce corresponding documents.
+            To gradually increase the difficulty of training, we introduce a curriculum learning-based rollout mechanism, where the quality of the retrieved documents is progressively degraded over time.
+            This is controlled by a probability function \(p_i\) that governs the likelihood of generating noisy documents at step \(i\):
+          </p>
+
+          </p>
+          \[
+          p_i\;=\; p_s \;+\;\frac{b^{\,i/m} - 1}{b - 1}\,(p_e - p_s)
+          \]
+          <p>
+
+          <p>
+            <b style="color:#615ced;">Reward Design</b> The reward signal serves as the primary supervision in the reinforcement learning process.
+            In this work, we adopt F1 score-based reward that focuses solely on answer accuracy.
+          </p>
+          <p>
+            \[
+            r_{\phi}(x, y) = \frac{2 \times IN}{PN + RN}
+            \]
+          </p>
+          <p>
+            where <i>IN</i> denotes the number of overlapping words between the prediction and the ground truth, <i>PN</i> is the number of words in the prediction, and <i>RN</i> is the number of words in the ground truth.
+            We do not incorporate an additional reward for output format, as we observed that the model consistently produces well-formed responses without explicit supervision.
+          </p>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- End Framework -->
+
+
+
+  <!-- MathJax script for rendering LaTeX -->
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
+
+  <!-- Experiments -->
+<section class="section" id="Experiments">
+  <div class="container is-max-desktop content">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-five-fifths">
+        <h2 class="title is-3">📊 Experiments</h2>
+
+        <!-- Results on in-domain and out-of-domain datasets -->
+        <img src="static/images/results.jpg" width="70%">
+        <div class="content has-text-justified">
+          <p>
+            <b style="color:#615ced;">Main Results</b>
+            The above table presents a comparison between ZeroSearch and several baseline methods across seven datasets. Based on the results, several key observations can be drawn:
+          </p>
+          <p>
+            <strong>ZeroSearch consistently outperforms all baseline methods.</strong>
+            This performance advantage holds for both in-domain datasets (\textit{i.e.}, NQ and HotpotQA) and out-of-domain datasets (\textit{i.e.}, TriviaQA, PopQA, 2WikiMultiHopQA, Musique, and Bamboogle), demonstrating the robustness of our method.
+          </p>
+          <p>
+            <strong>ZeroSearch surpasses methods that rely on real search engines.</strong>
+            Compared to Search-R1, which utilizes a real search engine, ZeroSearch achieves better performance, highlighting its potential as an effective alternative to real search engines in large-scale reinforcement learning.
+          </p>
+          <p>
+            <strong>ZeroSearch demonstrates strong generalizability.</strong>
+            Across different model families, sizes, and types (i.e., base or instruction-tuned), ZeroSearch consistently outperforms baselines. Moreover, its performance further improves with larger models, highlighting its scalability.
+          </p>
+        </div>
+
+        <!-- Reward curve comparison -->
+        <img src="static/images/compare_real_search.jpg" width="80%">
+        <div class="content has-text-justified">
+          <p>
+            <b style="color:#615ced;">Compare ZeroSearch with Real Search Engine</b>
+            We compare the reward curves of ZeroSearch and Search-R1 (using a real search engine) on LLaMA-3.2-3B.
+          </p>
+          <p>
+            <strong>The overall reward trends are similar across both methods.</strong>
+            As training progresses, the reward scores of both ZeroSearch and Search-R1 steadily increase, indicating that the policy models in both settings effectively learn to interact with search engines and produce correct answers.
+          </p>
+          <p>
+            <strong>ZeroSearch achieves a more pronounced reward improvement.</strong>
+            ZeroSearch initially lags behind Search-R1 but eventually surpasses it with less fluctuation, thanks to the curriculum mechanism that helps the model gradually master search tool usage.
+          </p>
+          <p>
+            <strong>ZeroSearch generalizes well across both base and instruction-tuned models.</strong>
+            Under both model types, ZeroSearch steadily improves reward performance, underscoring its generalizability.
+          </p>
+        </div>
+
+        <!-- RAG results -->
+        <img src="static/images/compare_simulation_llm.jpg" width="80%">
+        <div class="content has-text-justified">
+          <p>
+            <b style="color:#615ced;">Choice of Simulation LLMs</b>
+            We evaluate how different simulation engine configurations affect performance, including prompt-based and fine-tuned LLMs ranging from 3B to 14B parameters.
+          </p>
+          <p>
+            <strong>The fine-tuned 7B simulation engine (SFT-7B) achieves performance comparable to that of Google Search</strong>, while the 14B variant (SFT-14B) even surpasses it.
+            This demonstrates the feasibility of using a well-trained LLM as a substitute for real search engines in reinforcement learning setups.
+          </p>
+          <p>
+            <strong>Fine-tuned (SFT-based) simulation engines significantly outperform prompt-based ones.</strong>
+            Although prompt-based methods are explicitly guided to mimic the response style of a real search engine, a substantial distribution gap remains, leading to inferior performance.
+          </p>
+          <p>
+            <strong>Performance improves consistently with increasing model size.</strong>
+            Larger simulation LLMs not only exhibit stronger simulation capabilities, but also more accurately distinguish between relevant and irrelevant documents, thereby enabling more effective curriculum learning during training.
+          </p>
+        </div>
+
+        <!-- Case studies -->
+        <img src="static/images/case_study.jpg" width="80%">
+        <div class="content has-text-justified">
+          <p>
+            <b style="color:#615ced;">Case Study</b>
+            We show several interaction trajectories. From these examples, we observe:
+          </p>
+          <p>
+            <strong>The policy model consistently adheres to the expected output format</strong>, even though the format is only specified in the input template and not reinforced by the reward design.
+          </p>
+          <p>
+            <strong>The model demonstrates the capability for multi-turn search behavior to arrive at the final answer.</strong> This confirms that our method effectively incentivizes and leverages the model’s search capabilities.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+<!-- End Experiments -->
+
+
+
+  <footer class="footer">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-8">
+          <div class="content">
+
+            <p>
+              This page was built using the <a href="https://github.com/eliahuhorwitz/Academic-project-page-template"
+                target="_blank">Academic Project Page Template</a> which was adopted from the <a
+                href="https://nerfies.github.io" target="_blank">Nerfies</a> project page.
+              You are free to borrow the of this website, we just ask that you link back to this page in the footer.
+              <br> This website is licensed under a <a rel="license"
+                href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative
+                Commons Attribution-ShareAlike 4.0 International License</a>.
+            </p>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Statcounter tracking code -->
+
+  <!-- You can add a tracker to track page visits by creating an account at statcounter.com -->
+
+  <!-- End of Statcounter Code -->
+
+</body>
+
+</html>
