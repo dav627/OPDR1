@@ -191,6 +191,9 @@ if self._is_ref:
 
 ### Phase B —— 服务器：环境验证（有卡模式，挂 A800）
 
+> **一键验证**：`bash scripts/verify_phase_b.sh [模型路径]`
+> 脚本自动执行 B1-B5，输出 PASS/FAIL/WARN 报告。详见 `scripts/README.md`。
+
 | # | 任务 | 状态 |
 |---|------|------|
 | B1 | `nvidia-smi` 见 A800 | ⬜ |
