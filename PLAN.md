@@ -196,11 +196,11 @@ if self._is_ref:
 
 | # | 任务 | 状态 |
 |---|------|------|
-| B1 | `nvidia-smi` 见 A800 | ⬜ |
-| B2 | torch 2.4.0+cu121 / cuda / flash-attn / verl 自检全 PASS | ⬜ |
-| B3 | vllm 加载 Qwen2.5-3B-Instruct 并 `generate` 一句话 | ⬜ |
-| B4 | `sglang` 环境 `import sglang` 成功 | ⬜ |
-| B5 | 同步本地改动，确认改动文件无误 | ⬜ |
+| B1 | `nvidia-smi` 见 A800 | ✅ |
+| B2 | torch 2.4.0+cu121 / cuda / flash-attn / verl 自检全 PASS | ✅ |
+| B3 | vllm 加载 Qwen2.5-3B-Instruct 并 `generate` 一句话 | ✅ |
+| B4 | `sglang` 环境 `import sglang` 成功 | ✅ |
+| B5 | 同步本地改动，确认改动文件无误 | ✅ |
 
 ### Phase C —— 服务器：跑 Arm RL（baseline）
 
@@ -285,4 +285,7 @@ if self._is_ref:
 5. ~~A5：lint / 类型检查~~ ✅
 6. ~~A6：训练命令草稿~~ ✅（见 COMMANDS.md）
 
-**Phase A 已完成。** 下一步是 Phase B（服务器环境验证），需要在有 GPU 的服务器上执行。
+**Phase A 已完成。**
+**Phase B 已完成（22/22 全部通过）。** 服务器环境就绪：A800 80GB + torch 2.4.0+cu121 + flash-attn 2.6.3 + verl + vLLM + sglang 0.5.13。
+
+下一步是 Phase C（RL 基线训练，小步数验证 pipeline 不崩）和 Phase D（OPD 蒸馏训练）。
