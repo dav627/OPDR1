@@ -1,0 +1,22 @@
+#!/bin/bash
+# 本地配置文件 — 复制为 config.local.sh 后按需修改
+# cp config.local.sh.example config.local.sh
+#
+# 该文件会被 run_phase_c.sh 自动 source，覆盖默认值
+# config.local.sh 已加入 .gitignore，不会提交到仓库
+
+# ── 模型路径 ──
+# STUDENT_MODEL=/root/autodl-tmp/models/Qwen2.5-3B-Instruct
+SIMULATOR_MODEL=/root/autodl-tmp/models/Simulation_LLM_google_3B
+
+# ── 搜索配置 ──
+SEARCH_ENGINE=google
+
+# ── 显存分配（根据 GPU 显存调整）──
+# SIMULATOR_MEM_FRACTION=0.2
+# ROLLOUT_GPU_MEM_UTIL=0.4
+
+# ── Batch size（如 OOM 可调小）──
+# TRAIN_BATCH_SIZE=64
+# PPO_MICRO_BATCH_SIZE=16
+# LOG_PROB_MICRO_BATCH_SIZE=16

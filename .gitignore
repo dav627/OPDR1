@@ -10,6 +10,9 @@ logs/
 ZeroSearch/verl_checkpoints/
 ZeroSearch/wandb/
 
+# 本地配置（每台服务器不同，不入版本控制）
+config.local.sh
+
 # 第三方仓库已纳入版本控制
 # ZeroSearch/
 # Search-R1/

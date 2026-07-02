@@ -31,6 +31,15 @@ print_section() {
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ZS_DIR="$PROJECT_ROOT/ZeroSearch"
 
+# ── 加载本地配置（如存在）────────────────────────────
+# 在项目根目录创建 config.local.sh 可覆盖下面所有默认值
+# 该文件已加入 .gitignore，不会提交到仓库
+LOCAL_CONFIG="$PROJECT_ROOT/config.local.sh"
+if [ -f "$LOCAL_CONFIG" ]; then
+    print_info "加载本地配置: $LOCAL_CONFIG"
+    source "$LOCAL_CONFIG"
+fi
+
 # 模型与数据路径（按 AutoDL 约定）
 STUDENT_MODEL="${STUDENT_MODEL:-/root/autodl-tmp/models/Qwen2.5-3B-Instruct}"
 SIMULATOR_MODEL="${SIMULATOR_MODEL:-/root/autodl-tmp/models/Simulation_LLM_wiki_3B_V2}"
