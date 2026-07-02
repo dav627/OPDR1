@@ -69,8 +69,13 @@ class FSDPVLLMShardingManager(BaseShardingManager):
             self.gen_random_states = None
 
     def __enter__(self):
+        import sys
+        print(f'[DIAG] __enter__ start: full_params={self.full_params}, world_size={self._world_size}', flush=True)
+        print(f'[DIAG] calling state_dict()...', flush=True)
+        sys.stdout.flush()
         log_gpu_memory_usage('Before state_dict() in sharding manager memory', logger=logger)
         params = self.module.state_dict()
+        print(f'[DIAG] state_dict() done, keys={len(params)}, types={set(type(v).__name__ for v in params.values())}', flush=True)
         log_gpu_memory_usage('After state_dict() in sharding manager memory', logger=logger)
         # Copy, not share memory
         # Single-GPU SHARDED returns regular Tensors (use 'hf')
@@ -80,7 +85,9 @@ class FSDPVLLMShardingManager(BaseShardingManager):
             load_format = 'hf'
         else:
             load_format = 'dtensor'
+        print(f'[DIAG] calling sync_model_weights(load_format={load_format})...', flush=True)
         self.inference_engine.sync_model_weights(params, load_format=load_format)
+        print(f'[DIAG] sync_model_weights done', flush=True)
         log_gpu_memory_usage('After sync model weights in sharding manager', logger=logger)
 
         del params
