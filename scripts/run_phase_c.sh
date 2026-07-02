@@ -177,7 +177,25 @@ run_training() {
         [ "$confirm" != "y" ] && exit 1
     fi
 
-    print_info "开始训练..."
+    # 设置本地日志（配置快照 + GPU 监控 + 输出重定向）
+    EXPERIMENT_NAME="${STUDENT_MODEL##*/}_GRPO_${SEARCH_MODE}_${START_THRESHOLD}_${END_THRESHOLD}_${SEARCH_ENGINE}_turns_${MAX_TURNS}"
+    CHECKPOINT_DIR="$ZS_DIR/verl_checkpoints/$EXPERIMENT_NAME"
+    LOG_DIR="$PROJECT_ROOT/logs/$EXPERIMENT_NAME"
+    mkdir -p "$LOG_DIR" "$CHECKPOINT_DIR"
+    TRAIN_LOG="$LOG_DIR/train_output.log"
+
+    print_info "实验名: $EXPERIMENT_NAME"
+    print_info "本地日志目录: $LOG_DIR"
+    print_info "训练输出: $TRAIN_LOG"
+    print_info "GPU 监控: $LOG_DIR/gpu_monitor.csv"
+    print_info "配置快照: $LOG_DIR/config_snapshot.yaml"
+    print_info "环境快照: $LOG_DIR/env_info.txt"
+    print_info "实时查看: tail -f $TRAIN_LOG"
+
+    # 调用日志辅助脚本（保存配置 + 启动 GPU 监控）
+    bash "$PROJECT_ROOT/scripts/setup_logging.sh" "$EXPERIMENT_NAME" "$CHECKPOINT_DIR" > /dev/null
+
+    print_info "开始训练（输出同时写入 $TRAIN_LOG）..."
     bash train_grpo.sh \
         -n 1 \
         -g "$NUM_GPUS" \
@@ -191,7 +209,12 @@ run_training() {
         -e "$END_THRESHOLD" \
         -g "$SEARCH_ENGINE" \
         -r "$MAX_TURNS" \
-        -k "$TOPK"
+        -k "$TOPK" 2>&1 | tee "$TRAIN_LOG"
+
+    # 训练结束后停止 GPU 监控
+    if [ -f "$LOG_DIR/gpu_monitor.pid" ]; then
+        kill "$(cat $LOG_DIR/gpu_monitor.pid)" 2>/dev/null && print_info "GPU 监控已停止"
+    fi
 }
 
 show_status() {

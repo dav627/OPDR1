@@ -266,8 +266,15 @@ class DataParallelPPOActor(BasePPOActor):
                     ppo_kl = torch.tensor(0., device=policy_loss.device)
                     entropy_loss = verl_F.masked_mean(entropy, response_mask)
 
+                    # OPD 诊断指标：记录 student/teacher log_prob 均值与响应长度
+                    # 用于确认蒸馏方向正确（student 逐步逼近 teacher）
                     metrics['actor/kl_loss'] = kl_loss.detach().item()
                     metrics['actor/opd_loss'] = kl_loss.detach().item()
+                    metrics['actor/student_logp_mean'] = masked_mean(log_prob, response_mask).detach().item()
+                    metrics['actor/teacher_logp_mean'] = masked_mean(ref_log_prob, response_mask).detach().item()
+                    metrics['actor/logp_gap'] = (metrics['actor/teacher_logp_mean']
+                                                 - metrics['actor/student_logp_mean'])
+                    metrics['actor/response_tokens'] = response_mask.sum().detach().item()
                 else:
                     # GRPO: policy gradient + KL regularization
                     pg_loss, pg_clipfrac, ppo_kl = core_algos.compute_policy_loss(old_log_prob=old_log_prob,

@@ -4,10 +4,13 @@
 
 ## 文件说明
 
-| 脚本 | 用途 | 对应 Phase |
+| 文件 | 用途 | 对应 Phase |
 |------|------|-----------|
 | `verify_phase_b.sh` | 服务器环境验证（GPU/torch/vllm/sglang/代码改动） | Phase B |
-| `run_phase_c.sh` | RL 基线训练启动（模拟器 + 训练） | Phase C |
+| `run_phase_c.sh` | RL 基线训练启动（模拟器 + 训练 + 本地日志） | Phase C |
+| `setup_logging.sh` | 配置快照 + GPU 监控 + 环境信息保存 | 通用 |
+| `analyze_logs.py` | 从本地日志提取指标画曲线图 | 通用 |
+| `WANDB_GUIDE.md` | wandb 配置与关键指标说明 | 通用 |
 
 ## 使用方法
 

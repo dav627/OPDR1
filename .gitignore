@@ -5,6 +5,11 @@ __pycache__/
 *.egg-info/
 .DS_Store
 
+# 训练日志与 checkpoint（不入版本控制）
+logs/
+ZeroSearch/verl_checkpoints/
+ZeroSearch/wandb/
+
 # 第三方仓库已纳入版本控制
 # ZeroSearch/
 # Search-R1/
