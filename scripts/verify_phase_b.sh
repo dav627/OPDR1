@@ -140,6 +140,24 @@ else
     print_info "  修复建议: cd ZeroSearch && pip install -e ."
 fi
 
+# 检查 serpapi（generation.py 硬依赖，即使 simulate 模式也要装）
+print_info "检查 serpapi..."
+if python3 -c "import serpapi" 2>/dev/null; then
+    print_pass "serpapi 可用（ZeroSearch generation.py 硬依赖）"
+else
+    print_fail "serpapi 不可用（训练会直接崩溃）"
+    print_info "  修复建议: pip install serpapi"
+fi
+
+# 检查 wandb（训练日志后端）
+print_info "检查 wandb..."
+if python3 -c "import wandb" 2>/dev/null; then
+    print_pass "wandb 可用"
+else
+    print_fail "wandb 不可用"
+    print_info "  修复建议: pip install wandb && wandb login <KEY>"
+fi
+
 # 检查 transformers 版本
 print_info "检查 transformers 版本..."
 TF_VERSION=$(python3 -c "import transformers; print(transformers.__version__)" 2>/dev/null)

@@ -198,6 +198,7 @@ run_training() {
     bash "$PROJECT_ROOT/scripts/setup_logging.sh" "$LOG_SUBDIR" "$CHECKPOINT_DIR" > /dev/null
 
     print_info "开始训练（输出同时写入 $TRAIN_LOG）..."
+    set -o pipefail  # 让管道返回训练命令的退出码，而非 tee 的
     bash train_grpo.sh \
         -n 1 \
         -g "$NUM_GPUS" \
@@ -212,6 +213,8 @@ run_training() {
         -g "$SEARCH_ENGINE" \
         -r "$MAX_TURNS" \
         -k "$TOPK" 2>&1 | tee "$TRAIN_LOG"
+    TRAIN_EXIT_CODE=$?
+    set +o pipefail
 
     # 训练结束后停止 GPU 监控
     if [ -f "$LOG_DIR/gpu_monitor.pid" ]; then
@@ -295,7 +298,17 @@ case "$MODE" in
 esac
 
 print_section "完成"
-if [ "$MODE" = "smoke" ]; then
+if [ "${TRAIN_EXIT_CODE:-0}" -ne 0 ]; then
+    print_fail "训练失败（退出码 $TRAIN_EXIT_CODE）"
+    echo ""
+    print_info "日志: $LOG_DIR/train_output.log"
+    print_info "查看报错: tail -50 $LOG_DIR/train_output.log"
+    echo ""
+    print_warn "模拟器仍在后台运行（如需重试可复用）"
+    print_info "  重试: bash scripts/run_phase_c.sh $MODE"
+    print_info "  释放显存: bash scripts/run_phase_c.sh stop"
+    exit $TRAIN_EXIT_CODE
+elif [ "$MODE" = "smoke" ]; then
     print_pass "C1+C2 完成：模拟器已启动 + 小步数验证跑完"
     echo ""
     print_info "日志: $LOG_DIR/train_output.log"
