@@ -38,7 +38,10 @@ def ask_llm(ip_list_raw, prompt, temperature):
         try:
             ip = random.choice(ip_list)
             openai_api_key = "EMPTY"
-            openai_api_base = f"http://{ip}:6001/v1"
+            if ':' in ip:
+                openai_api_base = f"http://{ip}/v1"
+            else:
+                openai_api_base = f"http://{ip}:6001/v1"
             client = OpenAI(
                 api_key=openai_api_key,
                 base_url=openai_api_base,
