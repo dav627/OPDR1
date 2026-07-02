@@ -7,21 +7,42 @@
 | 脚本 | 用途 | 对应 Phase |
 |------|------|-----------|
 | `verify_phase_b.sh` | 服务器环境验证（GPU/torch/vllm/sglang/代码改动） | Phase B |
+| `run_phase_c.sh` | RL 基线训练启动（模拟器 + 训练） | Phase C |
 
 ## 使用方法
 
 ### Phase B 环境验证
 
-在服务器上 clone 项目后，进入项目目录运行：
+```bash
+bash scripts/verify_phase_b.sh [模型路径]
+```
+
+### Phase C RL 基线训练
 
 ```bash
-cd /root/autodl-tmp/code/OPDR1
+# 1. 查看资源下载命令（如需下载模型/数据）
+bash scripts/run_phase_c.sh download
 
-# 基本用法（默认模型路径 /root/autodl-tmp/models/Qwen2.5-3B-Instruct）
-bash scripts/verify_phase_b.sh
+# 2. 小步数验证（20 步，~30 分钟）
+bash scripts/run_phase_c.sh smoke
 
-# 指定模型路径
-bash scripts/verify_phase_b.sh /path/to/Qwen2.5-3B-Instruct
+# 3. 正式训练（500 步，8-12 小时）
+bash scripts/run_phase_c.sh full
+
+# 其他命令
+bash scripts/run_phase_c.sh serve    # 仅启动模拟器
+bash scripts/run_phase_c.sh stop     # 停止模拟器
+bash scripts/run_phase_c.sh status   # 查看状态
+```
+
+### 环境变量（可选，覆盖默认值）
+
+```bash
+export STUDENT_MODEL=/root/autodl-tmp/models/Qwen2.5-3B-Instruct
+export SIMULATOR_MODEL=/root/autodl-tmp/models/Simulation_LLM_wiki_3B_V2
+export DATA_PATH=/root/autodl-tmp/data/ZeroSearch_dataset
+export TOTAL_STEPS=500
+export NUM_GPUS=1
 ```
 
 ### 验证内容

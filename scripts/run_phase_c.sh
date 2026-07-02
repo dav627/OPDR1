@@ -1,0 +1,279 @@
+#!/bin/bash
+# Phase C: RL 基线训练启动脚本（GRPO）
+# 用途：在服务器上启动模拟器 + 小步数验证 + 正式训练
+# 用法：bash scripts/run_phase_c.sh [模式]
+#   模式: smoke  — 小步数验证（~20 步，~30 分钟）
+#         full   — 正式训练（~500 步，8-12 小时）
+#         serve  — 仅启动模拟器（不训练）
+#         stop   — 停止模拟器
+
+set -u
+
+# ── 颜色 ──────────────────────────────────────────────
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m'
+
+print_info()  { echo -e "${BLUE}[INFO]${NC} $1"; }
+print_pass()  { echo -e "${GREEN}[PASS]${NC} $1"; }
+print_fail()  { echo -e "${RED}[FAIL]${NC} $1"; }
+print_warn()  { echo -e "${YELLOW}[WARN]${NC} $1"; }
+print_section() {
+    echo ""
+    echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
+    echo -e "${BLUE}  $1${NC}"
+    echo -e "${BLUE}═══════════════════════════════════════════════════════════════${NC}"
+}
+
+# ── 路径配置（按服务器实际情况调整）─────────────────
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ZS_DIR="$PROJECT_ROOT/ZeroSearch"
+
+# 模型与数据路径（按 AutoDL 约定）
+STUDENT_MODEL="${STUDENT_MODEL:-/root/autodl-tmp/models/Qwen2.5-3B-Instruct}"
+SIMULATOR_MODEL="${SIMULATOR_MODEL:-/root/autodl-tmp/models/Simulation_LLM_wiki_3B_V2}"
+DATA_PATH="${DATA_PATH:-/root/autodl-tmp/data/ZeroSearch_dataset}"
+
+# 训练参数
+NUM_GPUS="${NUM_GPUS:-1}"
+SEARCH_MODE="${SEARCH_MODE:-simulate_sft}"   # simulate_sft = 用微调版模拟器
+SEARCH_ENGINE="${SEARCH_ENGINE:-wiki}"       # wiki 不需要 API key
+START_THRESHOLD="${START_THRESHOLD:-0}"
+END_THRESHOLD="${END_THRESHOLD:-0.5}"
+MAX_TURNS="${MAX_TURNS:-5}"
+TOPK="${TOPK:-5}"
+SIMULATOR_PORT="${SIMULATOR_PORT:-6001}"
+SIMULATOR_IP="${SIMULATOR_IP:-localhost}"
+
+# 训练步数（smoke vs full）
+MODE="${1:-smoke}"
+if [ "$MODE" = "smoke" ]; then
+    TOTAL_STEPS="${TOTAL_STEPS:-20}"
+    print_warn "小步数验证模式：仅跑 $TOTAL_STEPS 步"
+elif [ "$MODE" = "full" ]; then
+    TOTAL_STEPS="${TOTAL_STEPS:-500}"
+    print_info "正式训练模式：跑 $TOTAL_STEPS 步"
+fi
+
+# ── 函数定义 ──────────────────────────────────────────
+
+check_paths() {
+    print_section "路径检查"
+    local missing=0
+
+    for path_name in "学生模型:$STUDENT_MODEL" "模拟器模型:$SIMULATOR_MODEL" "数据集:$DATA_PATH"; do
+        name="${path_name%%:*}"
+        path="${path_name#*:}"
+        if [ -d "$path" ]; then
+            print_pass "$name: $path"
+        else
+            print_fail "$name缺失: $path"
+            missing=1
+        fi
+    done
+
+    if [ "$missing" -eq 1 ]; then
+        print_fail "有路径缺失，请先下载资源"
+        print_info "下载命令见 scripts/run_phase_c.sh 顶部注释"
+        exit 1
+    fi
+}
+
+start_simulator() {
+    print_section "启动模拟器（sglang 环境）"
+
+    # 检查是否已经在运行
+    if pgrep -f "sglang.launch_server" > /dev/null 2>&1; then
+        print_warn "模拟器已在运行，跳过启动"
+        print_info "如需重启: bash scripts/run_phase_c.sh stop && bash scripts/run_phase_c.sh serve"
+        return 0
+    fi
+
+    # 检查 sglang 环境
+    if ! command -v conda &> /dev/null; then
+        print_fail "conda 未安装"
+        exit 1
+    fi
+
+    if ! conda env list 2>/dev/null | grep -q "sglang"; then
+        print_fail "sglang conda 环境不存在"
+        print_info "创建: conda create -n sglang python=3.10 -y && conda activate sglang && pip install 'sglang[all]'"
+        exit 1
+    fi
+
+    print_info "在 sglang 环境中启动模拟器..."
+    print_info "模型: $SIMULATOR_MODEL"
+    print_info "端口: $SIMULATOR_PORT"
+    print_info "日志: /tmp/sglang_simulator.log"
+
+    # 后台启动 sglang server
+    nohup conda run -n sglang python -m sglang.launch_server \
+        --model-path "$SIMULATOR_MODEL" \
+        --host 0.0.0.0 \
+        --port "$SIMULATOR_PORT" \
+        --tp 1 \
+        --dp 1 \
+        > /tmp/sglang_simulator.log 2>&1 &
+
+    SIMULATOR_PID=$!
+    print_info "模拟器 PID: $SIMULATOR_PID"
+
+    # 等待模拟器就绪（最多 5 分钟）
+    print_info "等待模拟器就绪（最多 5 分钟）..."
+    for i in $(seq 1 60); do
+        if curl -s "http://localhost:$SIMULATOR_PORT/health" > /dev/null 2>&1; then
+            print_pass "模拟器已就绪（等待 ${i}0 秒）"
+            return 0
+        fi
+        sleep 10
+    done
+
+    print_fail "模拟器启动超时，查看日志: tail -50 /tmp/sglang_simulator.log"
+    exit 1
+}
+
+stop_simulator() {
+    print_section "停止模拟器"
+    pkill -f "sglang.launch_server" 2>/dev/null && print_pass "已停止" || print_warn "无运行中的模拟器"
+}
+
+run_training() {
+    print_section "启动 RL 训练（GRPO，$MODE 模式）"
+
+    # 切换到训练环境
+    if [ "${CONDA_DEFAULT_ENV:-}" != "rl-opd" ]; then
+        print_warn "当前不在 rl-opd 环境，尝试切换..."
+        source activate rl-opd 2>/dev/null || conda activate rl-opd 2>/dev/null || {
+            print_fail "无法激活 rl-opd 环境"
+            exit 1
+        }
+    fi
+
+    cd "$ZS_DIR" || { print_fail "ZeroSearch 目录不存在: $ZS_DIR"; exit 1; }
+
+    print_info "训练脚本: train_grpo.sh"
+    print_info "学生模型: $STUDENT_MODEL"
+    print_info "数据集: $DATA_PATH"
+    print_info "总步数: $TOTAL_STEPS"
+    print_info "搜索模式: $SEARCH_MODE (模拟器)"
+    print_info "搜索后端: $SEARCH_ENGINE"
+    print_info "日志: 训练输出直接打印，同时写 wandb"
+
+    # 确认模拟器可达
+    if ! curl -s "http://$SIMULATOR_IP:$SIMULATOR_PORT/health" > /dev/null 2>&1; then
+        print_fail "模拟器不可达: http://$SIMULATOR_IP:$SIMULATOR_PORT"
+        print_info "请先启动: bash scripts/run_phase_c.sh serve"
+        exit 1
+    fi
+
+    # wandb 登录检查
+    if ! python -c "import wandb; wandb.api.api_key" 2>/dev/null; then
+        print_warn "wandb 未登录，训练会失败"
+        print_info "登录命令: wandb login <你的KEY>"
+        print_info "获取KEY: https://wandb.ai/authorize"
+        read -p "是否已登录 wandb？(y/N) " confirm
+        [ "$confirm" != "y" ] && exit 1
+    fi
+
+    print_info "开始训练..."
+    bash train_grpo.sh \
+        -n 1 \
+        -g "$NUM_GPUS" \
+        -m "$STUDENT_MODEL" \
+        -d "$DATA_PATH" \
+        -t "$TOTAL_STEPS" \
+        -i "$SIMULATOR_IP:$SIMULATOR_PORT" \
+        -s "$SEARCH_MODE" \
+        -l "$SIMULATOR_MODEL" \
+        -a "$START_THRESHOLD" \
+        -e "$END_THRESHOLD" \
+        -g "$SEARCH_ENGINE" \
+        -r "$MAX_TURNS" \
+        -k "$TOPK"
+}
+
+show_status() {
+    print_section "当前状态"
+    echo "模拟器进程:"
+    pgrep -af "sglang.launch_server" || echo "  未运行"
+    echo ""
+    echo "GPU 占用:"
+    nvidia-smi --query-gpu=memory.used,memory.total,utilization.gpu --format=csv,noheader 2>/dev/null || echo "  nvidia-smi 不可用"
+    echo ""
+    echo "训练日志: tail -f /tmp/sglang_simulator.log"
+    echo "wandb: https://wandb.ai/<你的用户名>/ZeroSearch"
+}
+
+# ── 资源下载说明（放在脚本里方便查阅）─────────────────
+show_download_help() {
+    print_section "资源下载指南"
+    cat <<'EOF'
+如需下载模型/数据，在 rl-opd 环境中执行：
+
+# 1. 学生模型（Qwen2.5-3B-Instruct）
+huggingface-cli download Qwen/Qwen2.5-3B-Instruct --local-dir /root/autodl-tmp/models/Qwen2.5-3B-Instruct
+
+# 2. 模拟器模型（Simulation_LLM_wiki_3B_V2，省显存）
+huggingface-cli download sunhaonlp/Simulation_LLM_wiki_3B_V2 --local-dir /root/autodl-tmp/models/Simulation_LLM_wiki_3B_V2
+
+# 3. 训练数据
+huggingface-cli download --repo-type dataset sunhaonlp/ZeroSearch_dataset --local-dir /root/autodl-tmp/data/ZeroSearch_dataset
+
+# 4. （OPD 用）7B 老师模型（Phase D 需要）
+huggingface-cli download Alibaba-NLP/Search-R1-Qwen2.5-7B-GRPO --local-dir /root/autodl-tmp/models/Search-R1-Qwen2.5-7B-GRPO
+
+如 HF 下载慢，用镜像:
+export HF_ENDPOINT=https://hf-mirror.com
+huggingface-cli download ...
+EOF
+}
+
+# ── 主流程 ────────────────────────────────────────────
+print_section "Phase C: RL 基线训练（GRPO）"
+print_info "模式: $MODE"
+print_info "项目根目录: $PROJECT_ROOT"
+
+case "$MODE" in
+    smoke|full)
+        check_paths
+        start_simulator
+        run_training
+        show_status
+        ;;
+    serve)
+        check_paths
+        start_simulator
+        show_status
+        ;;
+    stop)
+        stop_simulator
+        ;;
+    status)
+        show_status
+        ;;
+    download)
+        show_download_help
+        ;;
+    *)
+        echo "用法: bash $0 {smoke|full|serve|stop|status|download}"
+        echo ""
+        echo "  smoke     — 小步数验证（20 步，~30 分钟）"
+        echo "  full      — 正式训练（500 步，8-12 小时）"
+        echo "  serve     — 仅启动模拟器"
+        echo "  stop      — 停止模拟器"
+        echo "  status    — 查看状态"
+        echo "  download  — 显示资源下载命令"
+        exit 1
+        ;;
+esac
+
+print_section "完成"
+if [ "$MODE" = "smoke" ]; then
+    print_pass "小步数验证完成。检查训练日志确认 reward 有上升趋势。"
+    print_info "确认无误后，跑正式训练: bash scripts/run_phase_c.sh full"
+elif [ "$MODE" = "full" ]; then
+    print_pass "正式训练完成。checkpoint 在 ZeroSearch/verl_checkpoints/ 下。"
+    print_info "下一步: Phase D (OPD 蒸馏训练)"
+fi

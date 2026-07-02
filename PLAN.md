@@ -204,6 +204,11 @@ if self._is_ref:
 
 ### Phase C —— 服务器：跑 Arm RL（baseline）
 
+> **一键启动**：`bash scripts/run_phase_c.sh {smoke|full}`
+> - `smoke` — 小步数验证（20 步，~30 分钟）
+> - `full` — 正式训练（500 步，8-12 小时）
+> - 其他：`serve`（仅启动模拟器）、`stop`、`status`、`download`（资源下载命令）
+
 | # | 任务 | 状态 |
 |---|------|------|
 | C1 | serve 模拟器（sglang 环境）/ 或由训练脚本拉起 | ⬜ |
