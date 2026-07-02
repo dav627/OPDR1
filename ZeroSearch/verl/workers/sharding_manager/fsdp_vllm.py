@@ -46,7 +46,10 @@ class FSDPVLLMShardingManager(BaseShardingManager):
 
         # Full params
         self.full_params = full_params
-        if full_params:
+        # 单卡时强制用 SHARDED_STATE_DICT 避免 FULL_STATE_DICT 的 all_gather 死锁
+        # （world_size=1 时 sharded 等价于 full，但不会触发内部通信）
+        world_size = torch.distributed.get_world_size() if torch.distributed.is_initialized() else 1
+        if full_params and world_size > 1:
             FSDP.set_state_dict_type(self.module,
                                      state_dict_type=StateDictType.FULL_STATE_DICT,
                                      state_dict_config=FullStateDictConfig())
