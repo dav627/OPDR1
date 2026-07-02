@@ -47,6 +47,14 @@ TOPK="${TOPK:-5}"
 SIMULATOR_PORT="${SIMULATOR_PORT:-6001}"
 SIMULATOR_IP="${SIMULATOR_IP:-localhost}"
 
+# 显存分配（A800 80GB：模拟器 30% + vLLM rollout 40% + FSDP actor/ref 剩余）
+# 如仍 OOM，调低 SIMULATOR_MEM_FRACTION 或 ROLLOUT_GPU_MEM_UTIL
+SIMULATOR_MEM_FRACTION="${SIMULATOR_MEM_FRACTION:-0.3}"
+ROLLOUT_GPU_MEM_UTIL="${ROLLOUT_GPU_MEM_UTIL:-0.4}"
+# batch size（如 OOM 可调小）
+TRAIN_BATCH_SIZE="${TRAIN_BATCH_SIZE:-64}"
+PPO_MICRO_BATCH_SIZE="${PPO_MICRO_BATCH_SIZE:-64}"
+
 # 训练步数（smoke vs full）
 MODE="${1:-smoke}"
 if [ "$MODE" = "smoke" ]; then
@@ -106,15 +114,18 @@ start_simulator() {
     print_info "在 sglang 环境中启动模拟器..."
     print_info "模型: $SIMULATOR_MODEL"
     print_info "端口: $SIMULATOR_PORT"
+    print_info "显存比例: $SIMULATOR_MEM_FRACTION（留空间给训练）"
     print_info "日志: /tmp/sglang_simulator.log"
 
     # 后台启动 sglang server
+    # --mem-fraction-static 限制模拟器显存，否则 sglang 默认占 88% 导致训练 OOM
     nohup conda run -n sglang python -m sglang.launch_server \
         --model-path "$SIMULATOR_MODEL" \
         --host 0.0.0.0 \
         --port "$SIMULATOR_PORT" \
         --tp 1 \
         --dp 1 \
+        --mem-fraction-static "$SIMULATOR_MEM_FRACTION" \
         > /tmp/sglang_simulator.log 2>&1 &
 
     SIMULATOR_PID=$!
