@@ -46,7 +46,9 @@ class FSDPVLLMShardingManager(BaseShardingManager):
 
         # Full params
         self.full_params = full_params
-        if full_params:
+        self._world_size = torch.distributed.get_world_size() if torch.distributed.is_initialized() else 1
+        # Single-GPU: force SHARDED to avoid FULL_STATE_DICT all_gather deadlock with vLLM
+        if full_params and self._world_size > 1:
             FSDP.set_state_dict_type(self.module,
                                      state_dict_type=StateDictType.FULL_STATE_DICT,
                                      state_dict_config=FullStateDictConfig())
@@ -71,7 +73,13 @@ class FSDPVLLMShardingManager(BaseShardingManager):
         params = self.module.state_dict()
         log_gpu_memory_usage('After state_dict() in sharding manager memory', logger=logger)
         # Copy, not share memory
-        load_format = 'hf' if self.full_params else 'dtensor'
+        # Single-GPU SHARDED returns regular Tensors (use 'hf')
+        # Multi-GPU SHARDED returns DTensor (use 'dtensor')
+        # Multi-GPU FULL returns regular Tensors (use 'hf')
+        if self.full_params or self._world_size == 1:
+            load_format = 'hf'
+        else:
+            load_format = 'dtensor'
         self.inference_engine.sync_model_weights(params, load_format=load_format)
         log_gpu_memory_usage('After sync model weights in sharding manager', logger=logger)
 
