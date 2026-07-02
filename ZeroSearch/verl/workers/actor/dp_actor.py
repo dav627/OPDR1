@@ -143,11 +143,21 @@ class DataParallelPPOActor(BasePPOActor):
     def _optimizer_step(self):
         assert self.config.grad_clip is not None
 
+        # Free forward/backward activations before loading optimizer states
+        torch.cuda.empty_cache()
+
+        if hasattr(self, '_optimizer_pre_step_fn') and self._optimizer_pre_step_fn:
+            self._optimizer_pre_step_fn()
+
         if isinstance(self.actor_module, FSDP):
             grad_norm = self.actor_module.clip_grad_norm_(max_norm=self.config.grad_clip)
         else:
             grad_norm = torch.nn.utils.clip_grad_norm_(self.actor_module.parameters(), max_norm=self.config.grad_clip)
         self.actor_optimizer.step()
+
+        if hasattr(self, '_optimizer_post_step_fn') and self._optimizer_post_step_fn:
+            self._optimizer_post_step_fn()
+
         return grad_norm
 
     def compute_log_prob(self, data: DataProto) -> torch.Tensor:

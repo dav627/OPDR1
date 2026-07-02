@@ -328,6 +328,12 @@ class ActorRolloutRefWorker(Worker):
                                               actor_module=self.actor_module_fsdp,
                                               actor_optimizer=self.actor_optimizer)
 
+            if self._is_offload_optimizer:
+                self.actor._optimizer_pre_step_fn = lambda: load_fsdp_optimizer(
+                    optimizer=self.actor_optimizer, device_id=torch.cuda.current_device())
+                self.actor._optimizer_post_step_fn = lambda: offload_fsdp_optimizer(
+                    optimizer=self.actor_optimizer)
+
         if self._is_rollout:
             self.rollout, self.rollout_sharding_manager = self._build_rollout()
 
@@ -364,8 +370,8 @@ class ActorRolloutRefWorker(Worker):
             load_fsdp_param_and_grad(module=self.actor_module_fsdp,
                                      device_id=torch.cuda.current_device(),
                                      load_grad=self._is_offload_grad)
-        if self._is_offload_optimizer:
-            load_fsdp_optimizer(optimizer=self.actor_optimizer, device_id=torch.cuda.current_device())
+        # Optimizer states loaded lazily in _optimizer_step() via callbacks
+        # to avoid holding params + grads + optimizer + activations on GPU simultaneously
 
         data.batch = data.batch.cuda()
 
@@ -395,8 +401,7 @@ class ActorRolloutRefWorker(Worker):
 
         if self._is_offload_param:
             offload_fsdp_param_and_grad(module=self.actor_module_fsdp, offload_grad=self._is_offload_grad)
-        if self._is_offload_optimizer:
-            offload_fsdp_optimizer(optimizer=self.actor_optimizer)
+        # Optimizer states already offloaded in _optimizer_step() via callbacks
         torch.cuda.empty_cache()
         return output
 
