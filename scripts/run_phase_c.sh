@@ -178,13 +178,15 @@ run_training() {
     fi
 
     # 设置本地日志（配置快照 + GPU 监控 + 输出重定向）
+    # 日志目录加 mode 后缀，避免 smoke 和 full 互相覆盖
     EXPERIMENT_NAME="${STUDENT_MODEL##*/}_GRPO_${SEARCH_MODE}_${START_THRESHOLD}_${END_THRESHOLD}_${SEARCH_ENGINE}_turns_${MAX_TURNS}"
+    LOG_SUBDIR="${EXPERIMENT_NAME}_${MODE}"
     CHECKPOINT_DIR="$ZS_DIR/verl_checkpoints/$EXPERIMENT_NAME"
-    LOG_DIR="$PROJECT_ROOT/logs/$EXPERIMENT_NAME"
+    LOG_DIR="$PROJECT_ROOT/logs/$LOG_SUBDIR"
     mkdir -p "$LOG_DIR" "$CHECKPOINT_DIR"
     TRAIN_LOG="$LOG_DIR/train_output.log"
 
-    print_info "实验名: $EXPERIMENT_NAME"
+    print_info "实验名: $EXPERIMENT_NAME (wandb)"
     print_info "本地日志目录: $LOG_DIR"
     print_info "训练输出: $TRAIN_LOG"
     print_info "GPU 监控: $LOG_DIR/gpu_monitor.csv"
@@ -193,7 +195,7 @@ run_training() {
     print_info "实时查看: tail -f $TRAIN_LOG"
 
     # 调用日志辅助脚本（保存配置 + 启动 GPU 监控）
-    bash "$PROJECT_ROOT/scripts/setup_logging.sh" "$EXPERIMENT_NAME" "$CHECKPOINT_DIR" > /dev/null
+    bash "$PROJECT_ROOT/scripts/setup_logging.sh" "$LOG_SUBDIR" "$CHECKPOINT_DIR" > /dev/null
 
     print_info "开始训练（输出同时写入 $TRAIN_LOG）..."
     bash train_grpo.sh \
@@ -294,9 +296,26 @@ esac
 
 print_section "完成"
 if [ "$MODE" = "smoke" ]; then
-    print_pass "小步数验证完成。检查训练日志确认 reward 有上升趋势。"
-    print_info "确认无误后，跑正式训练: bash scripts/run_phase_c.sh full"
+    print_pass "C1+C2 完成：模拟器已启动 + 小步数验证跑完"
+    echo ""
+    print_info "日志: $LOG_DIR/train_output.log"
+    print_info "指标分析: python scripts/analyze_logs.py $LOG_DIR"
+    echo ""
+    print_warn "模拟器仍在后台运行（占用 GPU 显存）"
+    print_info "  保留到跑 C3: 不用操作，直接 bash scripts/run_phase_c.sh full"
+    print_info "  立即释放显存: bash scripts/run_phase_c.sh stop"
+    print_info "  查看状态: bash scripts/run_phase_c.sh status"
+    echo ""
+    print_info "确认 reward 有上升趋势后，跑 C3 正式训练:"
+    print_info "  bash scripts/run_phase_c.sh full"
 elif [ "$MODE" = "full" ]; then
-    print_pass "正式训练完成。checkpoint 在 ZeroSearch/verl_checkpoints/ 下。"
+    print_pass "C3 完成：正式训练结束"
+    echo ""
+    print_info "checkpoint: $CHECKPOINT_DIR"
+    print_info "日志: $LOG_DIR/train_output.log"
+    print_info "指标分析: python scripts/analyze_logs.py $LOG_DIR"
+    echo ""
+    print_warn "模拟器仍在后台运行"
+    print_info "  释放显存: bash scripts/run_phase_c.sh stop"
     print_info "下一步: Phase D (OPD 蒸馏训练)"
 fi
