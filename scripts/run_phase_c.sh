@@ -51,9 +51,16 @@ SIMULATOR_IP="${SIMULATOR_IP:-localhost}"
 # 如仍 OOM，调低 SIMULATOR_MEM_FRACTION 或 ROLLOUT_GPU_MEM_UTIL
 export SIMULATOR_MEM_FRACTION="${SIMULATOR_MEM_FRACTION:-0.3}"
 export ROLLOUT_GPU_MEM_UTIL="${ROLLOUT_GPU_MEM_UTIL:-0.4}"
-# batch size（如 OOM 可调小）
+# batch size（单卡需要小 micro batch 避免 logits 张量 OOM）
 export TRAIN_BATCH_SIZE="${TRAIN_BATCH_SIZE:-64}"
-export PPO_MICRO_BATCH_SIZE="${PPO_MICRO_BATCH_SIZE:-64}"
+export PPO_MICRO_BATCH_SIZE="${PPO_MICRO_BATCH_SIZE:-16}"
+export LOG_PROB_MICRO_BATCH_SIZE="${LOG_PROB_MICRO_BATCH_SIZE:-16}"
+export REF_LOG_PROB_MICRO_BATCH_SIZE="${REF_LOG_PROB_MICRO_BATCH_SIZE:-16}"
+# 减少显存碎片
+export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
+# Ray 临时目录（/tmp 空间有限，用数据盘）
+export RAY_TMPDIR="${RAY_TMPDIR:-/root/autodl-tmp/ray_tmp}"
+mkdir -p "${RAY_TMPDIR}" 2>/dev/null
 
 # 训练步数（smoke vs full）
 MODE="${1:-smoke}"
