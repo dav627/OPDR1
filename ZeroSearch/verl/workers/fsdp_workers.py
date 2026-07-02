@@ -275,7 +275,7 @@ class ActorRolloutRefWorker(Worker):
             rollout_sharding_manager = FSDPVLLMShardingManager(module=self.actor_module_fsdp,
                                                                inference_engine=rollout.inference_engine,
                                                                model_config=self.actor_model_config,
-                                                               full_params='hf' in self.config.rollout.load_format,
+                                                               full_params=self.config.rollout.load_format == 'hf',
                                                                device_mesh=rollout_device_mesh)
             log_gpu_memory_usage('After building sharding manager', logger=None)
 
