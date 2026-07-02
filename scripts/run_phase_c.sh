@@ -67,6 +67,9 @@ export LOG_PROB_MICRO_BATCH_SIZE="${LOG_PROB_MICRO_BATCH_SIZE:-16}"
 export REF_LOG_PROB_MICRO_BATCH_SIZE="${REF_LOG_PROB_MICRO_BATCH_SIZE:-16}"
 # 减少显存碎片
 export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
+# vLLM 推理优化（A800 需要 True 省显存，RTX6000 可 False 提速）
+export ENFORCE_EAGER="${ENFORCE_EAGER:-True}"
+export FREE_CACHE_ENGINE="${FREE_CACHE_ENGINE:-True}"
 # Ray 临时目录（/tmp 空间有限，用数据盘）
 export RAY_TMPDIR="${RAY_TMPDIR:-/root/autodl-tmp/ray_tmp}"
 mkdir -p "${RAY_TMPDIR}" 2>/dev/null
