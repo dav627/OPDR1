@@ -199,20 +199,20 @@ run_training() {
 
     print_info "开始训练（输出同时写入 $TRAIN_LOG）..."
     set -o pipefail  # 让管道返回训练命令的退出码，而非 tee 的
+    # 注意: train_grpo.sh 用 $2/$4/$6... 取偶数位参数，必须用 KEY VALUE 成对传递
     bash train_grpo.sh \
-        -n 1 \
-        -g "$NUM_GPUS" \
-        -m "$STUDENT_MODEL" \
-        -d "$DATA_PATH" \
-        -t "$TOTAL_STEPS" \
-        -i "$SIMULATOR_IP:$SIMULATOR_PORT" \
-        -s "$SEARCH_MODE" \
-        -l "$SIMULATOR_MODEL" \
-        -a "$START_THRESHOLD" \
-        -e "$END_THRESHOLD" \
-        -g "$SEARCH_ENGINE" \
-        -r "$MAX_TURNS" \
-        -k "$TOPK" 2>&1 | tee "$TRAIN_LOG"
+        NUM_GPUS_PER_NODE "$NUM_GPUS" \
+        MODEL_PATH "$STUDENT_MODEL" \
+        DATA_PATH "$DATA_PATH" \
+        TOTAL_STEPS "$TOTAL_STEPS" \
+        IP "$SIMULATOR_IP:$SIMULATOR_PORT" \
+        SEARCH_MODE "$SEARCH_MODE" \
+        SIMULATION_LLM "$SIMULATOR_MODEL" \
+        START_THRESHOLD "$START_THRESHOLD" \
+        END_THRESHOLD "$END_THRESHOLD" \
+        SEARCH_ENGINE "$SEARCH_ENGINE" \
+        MAX_TURNS "$MAX_TURNS" \
+        TOPK "$TOPK" 2>&1 | tee "$TRAIN_LOG"
     TRAIN_EXIT_CODE=$?
     set +o pipefail
 
