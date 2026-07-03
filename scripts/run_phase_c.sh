@@ -43,7 +43,11 @@ fi
 # 模型与数据路径（按 AutoDL 约定）
 STUDENT_MODEL="${STUDENT_MODEL:-/root/autodl-tmp/models/Qwen2.5-3B-Instruct}"
 SIMULATOR_MODEL="${SIMULATOR_MODEL:-/root/autodl-tmp/models/Simulation_LLM_wiki_3B_V2}"
+TEACHER_MODEL="${TEACHER_MODEL:-/root/autodl-tmp/models/Search-R1-Qwen2.5-7B-GRPO}"
 DATA_PATH="${DATA_PATH:-/root/autodl-tmp/data/ZeroSearch_dataset}"
+
+# 训练模式：grpo（RL 基线）或 opd（在策略蒸馏）
+TRAIN_MODE="${TRAIN_MODE:-grpo}"
 
 # 训练参数
 NUM_GPUS="${NUM_GPUS:-1}"
@@ -100,6 +104,16 @@ check_paths() {
             missing=1
         fi
     done
+
+    if [ "$TRAIN_MODE" = "opd" ]; then
+        if [ -d "$TEACHER_MODEL" ]; then
+            print_pass "老师模型: $TEACHER_MODEL"
+        else
+            print_fail "老师模型缺失: $TEACHER_MODEL"
+            print_info "下载: huggingface-cli download Alibaba-NLP/Search-R1-Qwen2.5-7B-GRPO --local-dir $TEACHER_MODEL"
+            missing=1
+        fi
+    fi
 
     if [ "$missing" -eq 1 ]; then
         print_fail "有路径缺失，请先下载资源"
@@ -183,8 +197,12 @@ run_training() {
 
     cd "$ZS_DIR" || { print_fail "ZeroSearch 目录不存在: $ZS_DIR"; exit 1; }
 
-    print_info "训练脚本: train_grpo.sh"
+    print_info "训练模式: $TRAIN_MODE"
+    print_info "训练脚本: train_${TRAIN_MODE}.sh"
     print_info "学生模型: $STUDENT_MODEL"
+    if [ "$TRAIN_MODE" = "opd" ]; then
+        print_info "老师模型: $TEACHER_MODEL"
+    fi
     print_info "数据集: $DATA_PATH"
     print_info "总步数: $TOTAL_STEPS"
     print_info "搜索模式: $SEARCH_MODE (模拟器)"
@@ -209,7 +227,7 @@ run_training() {
 
     # 设置本地日志（配置快照 + GPU 监控 + 输出重定向）
     # 日志目录加 mode 后缀，避免 smoke 和 full 互相覆盖
-    EXPERIMENT_NAME="${STUDENT_MODEL##*/}_GRPO_${SEARCH_MODE}_${START_THRESHOLD}_${END_THRESHOLD}_${SEARCH_ENGINE}_turns_${MAX_TURNS}"
+    EXPERIMENT_NAME="${STUDENT_MODEL##*/}_${TRAIN_MODE^^}_${SEARCH_MODE}_${START_THRESHOLD}_${END_THRESHOLD}_${SEARCH_ENGINE}_turns_${MAX_TURNS}"
     LOG_SUBDIR="${EXPERIMENT_NAME}_${MODE}"
     CHECKPOINT_DIR="$ZS_DIR/verl_checkpoints/$EXPERIMENT_NAME"
     LOG_DIR="$PROJECT_ROOT/logs/$LOG_SUBDIR"
@@ -229,20 +247,37 @@ run_training() {
 
     print_info "开始训练（输出同时写入 $TRAIN_LOG）..."
     set -o pipefail  # 让管道返回训练命令的退出码，而非 tee 的
-    # 注意: train_grpo.sh 用 $2/$4/$6... 取偶数位参数，必须用 KEY VALUE 成对传递
-    bash train_grpo.sh \
-        NUM_GPUS_PER_NODE "$NUM_GPUS" \
-        MODEL_PATH "$STUDENT_MODEL" \
-        DATA_PATH "$DATA_PATH" \
-        TOTAL_STEPS "$TOTAL_STEPS" \
-        IP "$SIMULATOR_IP:$SIMULATOR_PORT" \
-        SEARCH_MODE "$SEARCH_MODE" \
-        SIMULATION_LLM "$SIMULATOR_MODEL" \
-        START_THRESHOLD "$START_THRESHOLD" \
-        END_THRESHOLD "$END_THRESHOLD" \
-        SEARCH_ENGINE "$SEARCH_ENGINE" \
-        MAX_TURNS "$MAX_TURNS" \
-        TOPK "$TOPK" 2>&1 | tee "$TRAIN_LOG"
+    # 注意: train_*.sh 用 $2/$4/$6... 取偶数位参数，必须用 KEY VALUE 成对传递
+    if [ "$TRAIN_MODE" = "opd" ]; then
+        bash train_opd.sh \
+            NUM_GPUS_PER_NODE "$NUM_GPUS" \
+            MODEL_PATH "$STUDENT_MODEL" \
+            TEACHER_PATH "$TEACHER_MODEL" \
+            DATA_PATH "$DATA_PATH" \
+            TOTAL_STEPS "$TOTAL_STEPS" \
+            IP "$SIMULATOR_IP:$SIMULATOR_PORT" \
+            SEARCH_MODE "$SEARCH_MODE" \
+            SIMULATION_LLM "$SIMULATOR_MODEL" \
+            START_THRESHOLD "$START_THRESHOLD" \
+            END_THRESHOLD "$END_THRESHOLD" \
+            SEARCH_ENGINE "$SEARCH_ENGINE" \
+            MAX_TURNS "$MAX_TURNS" \
+            TOPK "$TOPK" 2>&1 | tee "$TRAIN_LOG"
+    else
+        bash train_grpo.sh \
+            NUM_GPUS_PER_NODE "$NUM_GPUS" \
+            MODEL_PATH "$STUDENT_MODEL" \
+            DATA_PATH "$DATA_PATH" \
+            TOTAL_STEPS "$TOTAL_STEPS" \
+            IP "$SIMULATOR_IP:$SIMULATOR_PORT" \
+            SEARCH_MODE "$SEARCH_MODE" \
+            SIMULATION_LLM "$SIMULATOR_MODEL" \
+            START_THRESHOLD "$START_THRESHOLD" \
+            END_THRESHOLD "$END_THRESHOLD" \
+            SEARCH_ENGINE "$SEARCH_ENGINE" \
+            MAX_TURNS "$MAX_TURNS" \
+            TOPK "$TOPK" 2>&1 | tee "$TRAIN_LOG"
+    fi
     TRAIN_EXIT_CODE=$?
     set +o pipefail
 
