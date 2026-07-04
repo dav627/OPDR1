@@ -40,8 +40,8 @@ fi
 
 # 模型与数据路径
 STUDENT_MODEL="${STUDENT_MODEL:-/root/autodl-tmp/models/Qwen2.5-3B-Instruct}"
-SIMULATOR_MODEL="${SIMULATOR_MODEL:-/root/autodl-tmp/models/Simulation_LLM_wiki_3B_V2}"
-TEACHER_MODEL="${TEACHER_MODEL:-/root/autodl-tmp/models/Search-R1-Qwen2.5-7B-GRPO}"
+SIMULATOR_MODEL="${SIMULATOR_MODEL:-/root/autodl-tmp/models/Simulation_LLM_google_3B}"
+TEACHER_MODEL="${TEACHER_MODEL:-/root/autodl-tmp/models/ZeroSearch_google_V2_Qwen2.5_7B_Instruct}"
 DATA_PATH="${DATA_PATH:-/root/autodl-tmp/data/ZeroSearch_dataset}"
 
 # 训练参数
@@ -98,7 +98,7 @@ check_paths() {
 
     if [ "$missing" -eq 1 ]; then
         print_fail "有路径缺失，请先下载资源"
-        print_info "老师模型下载: huggingface-cli download Alibaba-NLP/Search-R1-Qwen2.5-7B-GRPO --local-dir $TEACHER_MODEL"
+        print_info "老师模型下载: huggingface-cli download Alibaba-NLP/ZeroSearch_google_V2_Qwen2.5_7B_Instruct --local-dir $TEACHER_MODEL"
         exit 1
     fi
 }
