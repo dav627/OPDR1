@@ -23,7 +23,8 @@ TOPK=${26}
 WAND_PROJECT='ZeroSearch'
 MODEL_NAME="${MODEL_PATH##*/}"
 
-export EXPERIMENT_NAME=${MODEL_NAME}_OPD_${SEARCH_MODE}_${SIMULATION_LLM}_${START_THRESHOLD}_${END_THRESHOLD}_${SEARCH_ENGINE}_turns_${MAX_TURNS}
+SIMULATION_LLM_NAME="${SIMULATION_LLM##*/}"
+export EXPERIMENT_NAME=${MODEL_NAME}_OPD_${SEARCH_MODE}_${SIMULATION_LLM_NAME}_${START_THRESHOLD}_${END_THRESHOLD}_${SEARCH_ENGINE}_turns_${MAX_TURNS}
 
 export VLLM_ATTENTION_BACKEND=XFORMERS
 
@@ -74,7 +75,7 @@ PYTHONUNBUFFERED=1 python3 -m verl.trainer.main_ppo \
     trainer.default_hdfs_dir=null \
     trainer.n_gpus_per_node=$NUM_GPUS_PER_NODE \
     trainer.nnodes=1 \
-    trainer.save_freq=50 \
+    trainer.save_freq=${SAVE_FREQ:-100} \
     trainer.test_freq=300 \
     trainer.project_name=$WAND_PROJECT \
     trainer.experiment_name=$EXPERIMENT_NAME \
