@@ -4,7 +4,7 @@
 
 # ── 模型路径（按需修改）──
 SIMULATOR_MODEL=/root/autodl-tmp/models/Simulation_LLM_google_3B
-TEACHER_MODEL=/root/autodl-tmp/models/Search-R1-Qwen2.5-7B-GRPO
+TEACHER_MODEL=/root/autodl-tmp/models/ZeroSearch_google_V2_Qwen2.5_7B_Instruct
 SEARCH_ENGINE=google
 
 # ── 显存分配 ──

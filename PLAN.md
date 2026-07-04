@@ -6,7 +6,7 @@
 
 ## 1. 项目一句话
 
-从零搭一个 agentic search 小模型（Qwen2.5-3B-Instruct），分别用 **GRPO (RL)** 和 **OPD（在策略蒸馏，老师 = SearchR1-7B）** 两条后训练路线训练，系统对比 **成本 / 效果 / 能力上限**，给出企业选型建议。
+从零搭一个 agentic search 小模型（Qwen2.5-3B-Instruct），分别用 **GRPO (RL)** 和 **OPD（在策略蒸馏，老师 = ZeroSearch-7B-Instruct）** 两条后训练路线训练，系统对比 **成本 / 效果 / 能力上限**，给出企业选型建议。
 
 ---
 
@@ -24,7 +24,7 @@ OPD 的改动（"基本改一行"精神）：
 
 | 项 | GRPO 原版 | OPD 改动 |
 |----|----------|---------|
-| 参考模型 `π_ref` | 初始 actor 冻结副本 | **SearchR1-7B（teacher）** |
+| 参考模型 `π_ref` | 初始 actor 冻结副本 | **ZeroSearch-7B-Instruct（teacher）** |
 | KL 的角色 | 小权重正则 | **主目标**（反向 KL 对老师） |
 | reward / advantage 项 | 保留 | **权重置 0 / 去掉** |
 | masking（response_mask + 检索 token mask） | 保留 | **保留**（只蒸学生生成的 token） |

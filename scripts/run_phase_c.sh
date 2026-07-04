@@ -280,7 +280,7 @@ huggingface-cli download sunhaonlp/Simulation_LLM_wiki_3B_V2 --local-dir /root/a
 huggingface-cli download --repo-type dataset sunhaonlp/ZeroSearch_dataset --local-dir /root/autodl-tmp/data/ZeroSearch_dataset
 
 # 4. （OPD 用）7B 老师模型（Phase D 需要）
-huggingface-cli download Alibaba-NLP/Search-R1-Qwen2.5-7B-GRPO --local-dir /root/autodl-tmp/models/Search-R1-Qwen2.5-7B-GRPO
+huggingface-cli download Alibaba-NLP/ZeroSearch_google_V2_Qwen2.5_7B_Instruct --local-dir /root/autodl-tmp/models/ZeroSearch_google_V2_Qwen2.5_7B_Instruct
 
 如 HF 下载慢，用镜像:
 export HF_ENDPOINT=https://hf-mirror.com

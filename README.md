@@ -7,7 +7,7 @@
 回答一个业务问题：企业要低成本拿到一个可部署的小模型，该用 RL 训，还是从更强的老师蒸？
 
 - **学生模型**: Qwen2.5-3B-Instruct
-- **OPD 老师**: Search-R1-Qwen2.5-7B-GRPO
+- **OPD 老师**: ZeroSearch_google_V2_Qwen2.5_7B_Instruct
 - **后端**: ZeroSearch 模拟搜索（$0 真实 API 调用）
 - **框架**: veRL (based on ZeroSearch/Search-R1)
 

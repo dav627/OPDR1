@@ -53,7 +53,7 @@ bash train_opd.sh \
   -n 1 \
   -g 8 \
   -m /root/autodl-tmp/models/Qwen2.5-3B-Instruct \
-  -T /root/autodl-tmp/models/Search-R1-Qwen2.5-7B-GRPO \
+  -T /root/autodl-tmp/models/ZeroSearch_google_V2_Qwen2.5_7B_Instruct \
   -d /root/autodl-tmp/data/ZeroSearch_dataset \
   -t 500 \
   -i localhost:8000 \
@@ -69,7 +69,7 @@ bash train_opd.sh \
 **Parameter mapping** (train_opd.sh positional args):
 - `$2` NUM_GPUS_PER_NODE = 8
 - `$4` MODEL_PATH = Qwen2.5-3B-Instruct (student)
-- `$6` TEACHER_PATH = Search-R1-Qwen2.5-7B-GRPO (7B teacher)
+- `$6` TEACHER_PATH = ZeroSearch_google_V2_Qwen2.5_7B_Instruct (7B teacher)
 - `$8` DATA_PATH = ZeroSearch_dataset
 - `$10` TOTAL_STEPS = 500
 - `$12` IP = localhost:8000
@@ -90,7 +90,7 @@ bash train_opd.sh \
 | `loss_mode` | `grpo` (default) | `opd` |
 | `ref.model_path` | null → uses actor model | teacher model path |
 | `kl_loss_coef` | 0.001 (small regularizer) | 1.0 (primary objective) |
-| Teacher model | N/A | Search-R1-7B |
+| Teacher model | N/A | ZeroSearch-7B-Instruct |
 
 ---
 
