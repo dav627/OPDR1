@@ -1,28 +1,23 @@
 #!/bin/bash
-# 本地配置文件 — 按 GPU 类型选择预设，然后按需微调
+# 本地配置文件 — 复制预设后按需微调
 #
-# 快速开始（二选一）:
-#   cp config.a800.sh config.local.sh      # A800 80GB
-#   cp config.rtx6000.sh config.local.sh   # RTX PRO 6000 96GB
+# 快速开始:
+#   cp config.a800.sh config.local.sh
 #
-# 该文件会被 run_phase_c.sh 自动 source，覆盖默认值
+# 该文件会被 run_phase_c.sh / run_phase_d.sh 自动 source
 # config.local.sh 已加入 .gitignore，不会提交到仓库
-#
-# ── 也可以手动配置 ──
 
 # 模型路径
 SIMULATOR_MODEL=/root/autodl-tmp/models/Simulation_LLM_google_3B
+TEACHER_MODEL=/root/autodl-tmp/models/Search-R1-Qwen2.5-7B-GRPO
 SEARCH_ENGINE=google
 
 # 显存分配
-# SIMULATOR_MEM_FRACTION=0.2
+# SIMULATOR_MEM_FRACTION=0.12
 # ROLLOUT_GPU_MEM_UTIL=0.4
 
 # Batch size
-# TRAIN_BATCH_SIZE=64
+# TRAIN_BATCH_SIZE=32
 # PPO_MICRO_BATCH_SIZE=16
 # LOG_PROB_MICRO_BATCH_SIZE=16
-
-# vLLM 推理策略
-# ENFORCE_EAGER=True        # True=省显存 False=CUDA图加速
-# FREE_CACHE_ENGINE=True    # True=训练时释放KV cache False=保留提速
+# REF_LOG_PROB_MICRO_BATCH_SIZE=8
