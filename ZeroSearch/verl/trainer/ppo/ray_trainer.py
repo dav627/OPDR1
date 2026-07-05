@@ -879,6 +879,8 @@ class RayPPOTrainer(object):
                 self.global_steps += 1
 
                 if self.global_steps >= self.total_training_steps:
+                    with _timer('save_checkpoint', timing_raw):
+                        self._save_checkpoint()
                     return
     
     def _create_loss_mask(self, batch, metrics):
