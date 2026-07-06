@@ -243,7 +243,7 @@ summarize() {
     echo ""
     printf "%-22s" "----------------------"
     for b in $benchmarks; do
-        printf "-+----------"
+        printf -- "-+----------"
     done
     echo ""
 
@@ -253,9 +253,14 @@ summarize() {
         local name=$(basename "$log_file" .log)
         printf "%-22s" "$name"
         for b in $benchmarks; do
-            # 提取 EM 和 F1，格式: val/test_score_EM/<bench>': 0.242
-            local em=$(grep "test_score_EM/${b}':" "$log_file" | grep -oP "[\d.]+$" | tail -1 || echo "-")
-            local f1=$(grep "test_score_F1/${b}':" "$log_file" | grep -oP "[\d.]+$" | tail -1 || echo "-")
+            # 日志格式: 'val/test_score_EM/<bench>': 0.242,  （Python dict repr，可能多个 benchmark 同行）
+            # 必须先精确匹配 "test_score_EM/<bench>': <number>" 紧邻模式，再提取数字，
+            # 否则 tail -1 会取到同行下一个 benchmark 的分数
+            local em f1
+            em=$(grep -oE "test_score_EM/${b}': [0-9]+\.[0-9]+" "$log_file" | grep -oE "[0-9]+\.[0-9]+" | tail -1)
+            f1=$(grep -oE "test_score_F1/${b}': [0-9]+\.[0-9]+" "$log_file" | grep -oE "[0-9]+\.[0-9]+" | tail -1)
+            em="${em:-N/A}"
+            f1="${f1:-N/A}"
             printf " | %-4s/%-4s" "$em" "$f1"
         done
         echo ""
