@@ -68,26 +68,44 @@ prepare_opd_checkpoint() {
 }
 
 # ── 启动模拟器 ──
+# 参数: $1 = 期望的 mem_fraction（可选，默认 SIMULATOR_MEM_FRACTION）
 ensure_simulator() {
+    local want_mem="${1:-$SIMULATOR_MEM_FRACTION}"
+
+    # 如果模拟器已在运行，检查显存比例是否匹配；不匹配则先停掉
     if curl -s "http://$SIMULATOR_IP:$SIMULATOR_PORT/health" > /dev/null 2>&1; then
-        print_pass "模拟器已在运行"
-        return 0
+        local cur_mem
+        cur_mem=$(pgrep -af "sglang.launch_server" | grep -oP "mem-fraction-static \K[0-9.]+" | head -1)
+        if [ -n "$cur_mem" ] && [ "$cur_mem" != "$want_mem" ]; then
+            print_warn "模拟器已在运行但显存比例 $cur_mem ≠ 需要 $want_mem，重启中..."
+            pkill -f "sglang.launch_server" 2>/dev/null
+            # 等 GPU 显存释放
+            for i in $(seq 1 30); do
+                if ! pgrep -f "sglang.launch_server" > /dev/null 2>&1; then break; fi
+                sleep 2
+            done
+            sleep 3
+        else
+            print_pass "模拟器已在运行（mem=$cur_mem）"
+            return 0
+        fi
     fi
-    print_info "启动模拟器..."
+
+    print_info "启动模拟器（mem_fraction=$want_mem）..."
     nohup conda run -n sglang python -m sglang.launch_server \
         --model-path "$SIMULATOR_MODEL" \
         --host 0.0.0.0 --port "$SIMULATOR_PORT" \
         --tp 1 --dp 1 \
-        --mem-fraction-static "$SIMULATOR_MEM_FRACTION" \
+        --mem-fraction-static "$want_mem" \
         > /tmp/sglang_simulator.log 2>&1 &
     for i in $(seq 1 60); do
         if curl -s "http://localhost:$SIMULATOR_PORT/health" > /dev/null 2>&1; then
-            print_pass "模拟器就绪（${i}0 秒）"
+            print_pass "模拟器就绪（${i}0 秒，mem=$want_mem）"
             return 0
         fi
         sleep 10
     done
-    print_fail "模拟器启动超时"
+    print_fail "模拟器启动超时，查看日志: tail -50 /tmp/sglang_simulator.log"
     exit 1
 }
 
@@ -133,27 +151,8 @@ eval_model() {
         ref_model_path="$BASELINE_MODEL"
         print_warn "7B 模型：rollout_mem=0.15, val_batch=4, n_agent=1, sim_mem=0.06, ref→3B"
     fi
-    # 7B 评测前临时压低模拟器显存（如果当前模拟器占用较高，需重启模拟器）
-    if [ "$model_size" = "7b" ] && [ "$sim_mem" != "$SIMULATOR_MEM_FRACTION" ]; then
-        print_warn "7B 评测需要更小的模拟器显存 ($sim_mem)，重启模拟器中..."
-        pkill -f "sglang.launch_server" 2>/dev/null
-        sleep 5
-        SIMULATOR_MEM_FRACTION="$sim_mem"
-        # 重新启动模拟器
-        nohup conda run -n sglang python -m sglang.launch_server \
-            --model-path "$SIMULATOR_MODEL" \
-            --host 0.0.0.0 --port "$SIMULATOR_PORT" \
-            --tp 1 --dp 1 \
-            --mem-fraction-static "$sim_mem" \
-            > /tmp/sglang_simulator.log 2>&1 &
-        for i in $(seq 1 60); do
-            if curl -s "http://$SIMULATOR_IP:$SIMULATOR_PORT/health" > /dev/null 2>&1; then
-                print_pass "模拟器已用 $sim_mem 显存重启就绪"
-                break
-            fi
-            sleep 10
-        done
-    fi
+    # 确保模拟器以 sim_mem 比例运行（不匹配会自动重启）
+    ensure_simulator "$sim_mem"
 
     export VLLM_ATTENTION_BACKEND=XFORMERS
 
@@ -280,8 +279,18 @@ echo "  3. 官方 GRPO:  $GRPO_MODEL"
 echo "  4. 7B 老师:    $TEACHER_MODEL"
 echo ""
 
-ensure_simulator
-prepare_opd_checkpoint
+# 根据目标模型决定模拟器显存比例（7B 需要 0.06，其余 0.12）
+case "$TARGET" in
+    4) TARGET_SIM_MEM=0.06 ;;
+    *) TARGET_SIM_MEM="$SIMULATOR_MEM_FRACTION" ;;
+esac
+
+ensure_simulator "$TARGET_SIM_MEM"
+
+# 仅在需要 OPD 评测时准备其 checkpoint
+case "$TARGET" in
+    2|all) prepare_opd_checkpoint ;;
+esac
 
 case "$TARGET" in
     1) eval_model "$BASELINE_MODEL" "1_baseline_3B" "3b" ;;
