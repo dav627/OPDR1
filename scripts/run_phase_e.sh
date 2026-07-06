@@ -146,10 +146,9 @@ eval_model() {
         rollout_mem=0.25
         val_batch=4
         n_agent=1
-        sim_mem=0.08
         ref_micro=2
         ref_model_path="$BASELINE_MODEL"
-        print_warn "7B 模型：rollout_mem=0.25, val_batch=4, n_agent=1, sim_mem=0.08, ref→3B"
+        print_warn "7B 模型：rollout_mem=0.25, val_batch=4, n_agent=1, ref→3B"
     fi
     # 确保模拟器以 sim_mem 比例运行（不匹配会自动重启）
     ensure_simulator "$sim_mem"
@@ -279,13 +278,8 @@ echo "  3. 官方 GRPO:  $GRPO_MODEL"
 echo "  4. 7B 老师:    $TEACHER_MODEL"
 echo ""
 
-# 根据目标模型决定模拟器显存比例（7B 需要 0.06，其余 0.12）
-case "$TARGET" in
-    4) TARGET_SIM_MEM=0.06 ;;
-    *) TARGET_SIM_MEM="$SIMULATOR_MEM_FRACTION" ;;
-esac
-
-ensure_simulator "$TARGET_SIM_MEM"
+# 模拟器统一使用默认显存比例（0.12），不因评测模型大小而调整
+ensure_simulator "$SIMULATOR_MEM_FRACTION"
 
 # 仅在需要 OPD 评测时准备其 checkpoint
 case "$TARGET" in
