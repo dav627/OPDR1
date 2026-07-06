@@ -143,15 +143,15 @@ eval_model() {
     local ref_micro=16
     local ref_model_path="$model_path"
     if [ "$model_size" = "7b" ]; then
-        rollout_mem=0.15
+        rollout_mem=0.28
         val_batch=4
         n_agent=1
-        sim_mem=0.06
+        sim_mem=0.05
         ref_micro=2
         # 评测时 ref 不参与计算（use_kl_loss=false），但 verl 仍会实例化 ref。
         # 把 ref 指向 3B baseline，避免再加载一份 7B。
         ref_model_path="$BASELINE_MODEL"
-        print_warn "7B 模型：rollout_mem=0.15, val_batch=4, n_agent=1, sim_mem=0.06, ref→3B"
+        print_warn "7B 模型：rollout_mem=0.28, val_batch=4, n_agent=1, sim_mem=0.05, ref→3B"
     fi
     # 确保模拟器以 sim_mem 比例运行（不匹配会自动重启）
     ensure_simulator "$sim_mem"
