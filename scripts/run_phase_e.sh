@@ -164,8 +164,8 @@ eval_model() {
         actor_rollout_ref.rollout.n_agent=5 \
         actor_rollout_ref.rollout.temperature=1 \
         trainer.logger=[] \
-        +trainer.val_only=true \
-        +trainer.val_before_train=true \
+        trainer.val_only=true \
+        trainer.val_before_train=true \
         trainer.default_hdfs_dir=null \
         trainer.n_gpus_per_node=1 \
         trainer.nnodes=1 \
