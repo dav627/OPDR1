@@ -200,18 +200,38 @@ eval_model() {
 
 # ── 汇总结果 ──
 summarize() {
-    print_section "评测结果汇总"
-    echo ""
-    printf "%-30s | %-8s | %-8s\n" "模型" "EM" "F1"
-    printf "%-30s-+-%-8s-+-%-8s\n" "------------------------------" "--------" "--------"
+    print_section "评测结果汇总（7 个 benchmark）"
 
+    # 提取所有 benchmark 名称
+    local benchmarks="nq triviaqa popqa hotpotqa 2wikimultihopqa musique bamboogle"
+
+    # 表头
+    printf "%-22s" "模型"
+    for b in $benchmarks; do
+        printf " | %-8s" "$b"
+    done
+    echo ""
+    printf "%-22s" "----------------------"
+    for b in $benchmarks; do
+        printf "-+----------"
+    done
+    echo ""
+
+    # 每个模型一行
     for log_file in "$EVAL_DIR"/*.log; do
         [ -f "$log_file" ] || continue
         local name=$(basename "$log_file" .log)
-        local em=$(grep "test_score_EM" "$log_file" | tail -1 | grep -oP "[\d.]+$" || echo "N/A")
-        local f1=$(grep "test_score_F1" "$log_file" | tail -1 | grep -oP "[\d.]+$" || echo "N/A")
-        printf "%-30s | %-8s | %-8s\n" "$name" "$em" "$f1"
+        printf "%-22s" "$name"
+        for b in $benchmarks; do
+            # 提取 EM 和 F1，格式: val/test_score_EM/<bench>': 0.242
+            local em=$(grep "test_score_EM/${b}':" "$log_file" | grep -oP "[\d.]+$" | tail -1 || echo "-")
+            local f1=$(grep "test_score_F1/${b}':" "$log_file" | grep -oP "[\d.]+$" | tail -1 || echo "-")
+            printf " | %-4s/%-4s" "$em" "$f1"
+        done
+        echo ""
     done
+    echo ""
+    echo "（每个格子格式: EM/F1）"
     echo ""
 }
 
