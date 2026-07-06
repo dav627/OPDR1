@@ -533,7 +533,7 @@ class RayPPOTrainer(object):
                         generation_manager.timing_raw = timing_raw
                         final_gen_batch_output, trajectory_turns = generation_manager.run_llm_loop(
                             gen_batch=test_gen_batch,
-                            search_mode=self.config.retriever.search_engine,
+                            search_mode=self.config.retriever.search_mode,
                             initial_input_ids=first_input_ids,
                             current_step=self.global_steps,
                             total_steps=self.config.trainer.total_training_steps,
