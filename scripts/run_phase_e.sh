@@ -144,11 +144,11 @@ eval_model() {
     local ref_model_path="$model_path"
     if [ "$model_size" = "7b" ]; then
         rollout_mem=0.25
-        val_batch=4
+        val_batch=16
         n_agent=1
         ref_micro=2
         ref_model_path="$BASELINE_MODEL"
-        print_warn "7B 模型：rollout_mem=0.25, val_batch=4, n_agent=1, ref→3B"
+        print_warn "7B 模型：rollout_mem=0.25, val_batch=16, n_agent=1, ref→3B"
     fi
     # 确保模拟器以 sim_mem 比例运行（不匹配会自动重启）
     ensure_simulator "$sim_mem"
