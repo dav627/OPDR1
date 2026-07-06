@@ -115,13 +115,44 @@ eval_model() {
 
     cd "$ZS_DIR" || { print_fail "ZeroSearch 目录不存在"; return 1; }
 
-    # 7B 模型用更小的 batch
+    # 7B 模型：单卡 80GB 同时塞 模拟器+vLLM+FSDP 同步，需大幅压低显存
     local rollout_mem="$ROLLOUT_GPU_MEM_UTIL"
     local val_batch=64
+    local n_agent=5
+    local sim_mem="$SIMULATOR_MEM_FRACTION"
+    local ref_micro=16
+    local ref_model_path="$model_path"
     if [ "$model_size" = "7b" ]; then
-        rollout_mem=0.35
-        val_batch=32
-        print_info "7B 模型：缩小 batch 和显存"
+        rollout_mem=0.15
+        val_batch=4
+        n_agent=1
+        sim_mem=0.06
+        ref_micro=2
+        # 评测时 ref 不参与计算（use_kl_loss=false），但 verl 仍会实例化 ref。
+        # 把 ref 指向 3B baseline，避免再加载一份 7B。
+        ref_model_path="$BASELINE_MODEL"
+        print_warn "7B 模型：rollout_mem=0.15, val_batch=4, n_agent=1, sim_mem=0.06, ref→3B"
+    fi
+    # 7B 评测前临时压低模拟器显存（如果当前模拟器占用较高，需重启模拟器）
+    if [ "$model_size" = "7b" ] && [ "$sim_mem" != "$SIMULATOR_MEM_FRACTION" ]; then
+        print_warn "7B 评测需要更小的模拟器显存 ($sim_mem)，重启模拟器中..."
+        pkill -f "sglang.launch_server" 2>/dev/null
+        sleep 5
+        SIMULATOR_MEM_FRACTION="$sim_mem"
+        # 重新启动模拟器
+        nohup conda run -n sglang python -m sglang.launch_server \
+            --model-path "$SIMULATOR_MODEL" \
+            --host 0.0.0.0 --port "$SIMULATOR_PORT" \
+            --tp 1 --dp 1 \
+            --mem-fraction-static "$sim_mem" \
+            > /tmp/sglang_simulator.log 2>&1 &
+        for i in $(seq 1 60); do
+            if curl -s "http://$SIMULATOR_IP:$SIMULATOR_PORT/health" > /dev/null 2>&1; then
+                print_pass "模拟器已用 $sim_mem 显存重启就绪"
+                break
+            fi
+            sleep 10
+        done
     fi
 
     export VLLM_ATTENTION_BACKEND=XFORMERS
@@ -151,17 +182,18 @@ eval_model() {
         actor_rollout_ref.actor.fsdp_config.grad_offload=true \
         actor_rollout_ref.actor.fsdp_config.optimizer_offload=true \
         +actor_rollout_ref.actor.fsdp_config.model_dtype=bf16 \
-        actor_rollout_ref.rollout.log_prob_micro_batch_size=16 \
+        actor_rollout_ref.rollout.log_prob_micro_batch_size=$ref_micro \
         actor_rollout_ref.rollout.tensor_model_parallel_size=1 \
         actor_rollout_ref.rollout.name=vllm \
         actor_rollout_ref.rollout.gpu_memory_utilization=$rollout_mem \
         actor_rollout_ref.rollout.enforce_eager=${ENFORCE_EAGER} \
         actor_rollout_ref.rollout.free_cache_engine=${FREE_CACHE_ENGINE} \
-        actor_rollout_ref.ref.log_prob_micro_batch_size=16 \
+        actor_rollout_ref.ref.model.path=$ref_model_path \
+        actor_rollout_ref.ref.log_prob_micro_batch_size=$ref_micro \
         actor_rollout_ref.ref.fsdp_config.param_offload=True \
         actor_rollout_ref.actor.state_masking=True \
         algorithm.no_think_rl=false \
-        actor_rollout_ref.rollout.n_agent=5 \
+        actor_rollout_ref.rollout.n_agent=$n_agent \
         actor_rollout_ref.rollout.temperature=1 \
         trainer.logger=[] \
         trainer.val_only=true \
