@@ -186,7 +186,7 @@ eval_model() {
         actor_rollout_ref.rollout.gpu_memory_utilization=$rollout_mem \
         actor_rollout_ref.rollout.enforce_eager=${ENFORCE_EAGER} \
         actor_rollout_ref.rollout.free_cache_engine=${FREE_CACHE_ENGINE} \
-        actor_rollout_ref.ref.model.path=$ref_model_path \
+        actor_rollout_ref.ref.model_path=$ref_model_path \
         actor_rollout_ref.ref.log_prob_micro_batch_size=$ref_micro \
         actor_rollout_ref.ref.fsdp_config.param_offload=True \
         actor_rollout_ref.actor.state_masking=True \
