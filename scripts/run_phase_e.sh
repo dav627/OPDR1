@@ -69,15 +69,19 @@ prepare_opd_checkpoint() {
 
 # ── 启动模拟器 ──
 # 参数: $1 = 期望的 mem_fraction（可选，默认 SIMULATOR_MEM_FRACTION）
+# 用 /tmp/sglang_simulator.state 记录上次启动时的 mem，避免解析进程命令行出错
+SGLANG_STATE_FILE="/tmp/sglang_simulator.state"
 ensure_simulator() {
     local want_mem="${1:-$SIMULATOR_MEM_FRACTION}"
 
-    # 如果模拟器已在运行，检查显存比例是否匹配；不匹配则先停掉
     if curl -s "http://$SIMULATOR_IP:$SIMULATOR_PORT/health" > /dev/null 2>&1; then
-        local cur_mem
-        cur_mem=$(pgrep -af "sglang.launch_server" | grep -oP "mem-fraction-static \K[0-9.]+" | head -1)
-        if [ -n "$cur_mem" ] && [ "$cur_mem" != "$want_mem" ]; then
-            print_warn "模拟器已在运行但显存比例 $cur_mem ≠ 需要 $want_mem，重启中..."
+        local last_mem=""
+        [ -f "$SGLANG_STATE_FILE" ] && last_mem=$(cat "$SGLANG_STATE_FILE" 2>/dev/null)
+        if [ "$last_mem" = "$want_mem" ]; then
+            print_pass "模拟器已在运行（mem=$last_mem）"
+            return 0
+        else
+            print_warn "模拟器已在运行但显存比例 ${last_mem:-未知} ≠ 需要 $want_mem，重启中..."
             pkill -f "sglang.launch_server" 2>/dev/null
             # 等 GPU 显存释放
             for i in $(seq 1 30); do
@@ -85,9 +89,6 @@ ensure_simulator() {
                 sleep 2
             done
             sleep 3
-        else
-            print_pass "模拟器已在运行（mem=$cur_mem）"
-            return 0
         fi
     fi
 
@@ -101,6 +102,7 @@ ensure_simulator() {
     for i in $(seq 1 60); do
         if curl -s "http://localhost:$SIMULATOR_PORT/health" > /dev/null 2>&1; then
             print_pass "模拟器就绪（${i}0 秒，mem=$want_mem）"
+            echo "$want_mem" > "$SGLANG_STATE_FILE"
             return 0
         fi
         sleep 10
