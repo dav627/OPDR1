@@ -18,7 +18,7 @@
 **三个关键发现：**
 
 1. **GRPO 3B 追平 7B 老师**：EM 仅差 3%，且在多跳任务（2Wiki +9%、MuSiQue +6%）上反超老师——RL 能突破蒸馏天花板。
-2. **OPD 未达老师上限**：只到老师 72%，蒸馏超参（lr=1e-6 + 95% warmup）和配置（google 模拟器 + wiki 语料）未充分利用老师信号。
+2. **OPD 未达老师上限**：只到老师 72%，蒸馏超参（lr=1e-6 + 95% warmup）未充分利用老师信号。
 3. **多跳任务差距最大**：单跳老师仍领先 +1-3%，多跳 GRPO 反超——RL 学到的是推理链路而非记忆。
 
 详细数字见 [docs/EVAL_RESULTS.md](docs/EVAL_RESULTS.md)，完整分析与下一轮调整预期见 [docs/实验报告.md](docs/实验报告.md)。
@@ -243,9 +243,10 @@ GRPO 3B 与 7B 老师 EM 均值仅差 3%（0.444 vs 0.457），F1 差 5%（0.453
 
 OPD 3B EM 0.327，仅达老师（0.457）的 **72%**，距离老师仍有 13 个点缺口。可能原因：
 
-1. **lr 过保守**：`lr=1e-6` + `lr_warmup_steps_ratio=0.95`，500 步内前 475 步都在线性爬坡，平均有效 lr ≈ 5e-7，学生未充分逼近老师。
-2. **信号效率低**：OPD 在所有 5 条 rollout 上无差别蒸馏（包括学生已答对的轨迹），而 GRPO 只奖励高优势样本，梯度信号更聚焦。
-3. **配置不匹配**：OPD 内部三方不一致——`Simulation_LLM_google_3B`（google 版模拟器）+ `ZeroSearch_google_V2_Qwen2.5_7B_Instruct`（google 版老师）+ `search_engine=wiki`（wiki 语料），老师在 Google 搜索轨迹上训练，却要在 wiki 模拟器生成的轨迹上给 log_prob，分布外。GRPO 基线则用 wiki 模拟器 + wiki 语料，自洽。
+1. **lr 过保守**（主因）：`lr=1e-6` + `lr_warmup_steps_ratio=0.95`，500 步内前 475 步都在线性爬坡，平均有效 lr ≈ 5e-7，学生未充分逼近老师。
+2. **模拟器规模不一致**（待验证）：学生 OPD rollout 用 `Simulation_LLM_google_3B`（3B 模拟器）生成检索内容，老师训练时用的模拟器规模未知（很可能 14B，见 §4.1 表中"官方 GRPO 训练时"用的就是 14B），若规模差距大，老师对学生 3B 模拟器轨迹的 log-prob 噪声偏大。
+
+> **注**：早先版本曾归因"google/wiki 语料三方不匹配"和"无差别蒸馏信号效率低"，经代码追踪后**均弃用**——`search_engine` 参数在 verl 管线中是死代码（详见 [docs/实验报告.md](docs/实验报告.md) §2.1 注），`simulate_sft` 模式下不存在 google/wiki 维度的偏移；"无差别蒸馏"是 on-policy 蒸馏的设计优势而非缺陷。
 
 ### 6.3 OPD 仍优于基线
 
@@ -255,7 +256,7 @@ OPD 蒸馏有效，7 个 benchmark 全部提升：EM 均值 0.208 → 0.327（+5
 
 若要进一步提升 OPD 效果：
 - `lr_warmup_steps_ratio` 降到 0.1-0.2，或 `lr` 提到 2e-6-5e-6
-- 统一模拟器/老师/语料（改用 wiki 版老师，或 `search_engine=google`）
+- 查证老师训练时的模拟器规模；若与 3B 差距大，换 14B 模拟器重训 OPD（注意：调 `search_engine` 参数无意义，它在 verl 管线中不被消费）
 - 单独 eval 7B 老师确认天花板（已完成：EM 0.457）
 - 增加训练步数到 800-1000 步
 

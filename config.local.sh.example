@@ -10,6 +10,8 @@
 # 模型路径
 SIMULATOR_MODEL=/root/autodl-tmp/models/Simulation_LLM_google_3B
 TEACHER_MODEL=/root/autodl-tmp/models/ZeroSearch_google_V2_Qwen2.5_7B_Instruct
+# 注: SEARCH_ENGINE 在 verl 管线中是死代码 (search_mode=simulate_sft 时不生效)。
+# 仅供未来切换到真实检索模式时参考。
 SEARCH_ENGINE=google
 
 # 显存分配

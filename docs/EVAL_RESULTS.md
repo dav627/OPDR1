@@ -42,11 +42,11 @@
 | 训练方法 | 无训练（原始权重） | 在策略蒸馏（反向 KL 对 7B 老师） | GRPO + outcome reward | ZeroSearch 官方 RL 训练 |
 | 训练步数 | — | 400 步 | 203 步 | — |
 | 模拟器 | Simulation_LLM_google_3B | 同左 | Simulation_LLM_google_14B | Simulation_LLM_google_3B |
-| 搜索后端 | ZeroSearch 模拟搜索 | 同左 | 同左 | 同左 |
+| 搜索模式 | `search_mode=simulate_sft`（模拟器 LLM 生成检索） | 同左 | 同左 | 同左 |
 | 7B 老师 | ZeroSearch_google_V2_Qwen2.5_7B_Instruct | 同左（作为蒸馏对象） | — | — |
 | 评测样本 | 48/benchmark | 48/benchmark | 48/benchmark | 195 条（全量 test set） |
 
-**注意**：GRPO 基线采用 ZeroSearch 官方发布的训好模型，模拟器（14B）和训练步数（203）与 OPD 臂（3B 模拟器、400 步）略有差异，对比为近似参考。7B 老师评测样本数为 195 条（7 个 benchmark 全量），其余模型为 48 条/benchmark。
+**注意**：GRPO 基线采用 ZeroSearch 官方发布的训好模型，模拟器（14B）和训练步数（203）与 OPD 臂（3B 模拟器、400 步）略有差异，对比为近似参考。7B 老师评测样本数为 195 条（7 个 benchmark 全量），其余模型为 48 条/benchmark。`search_engine` 参数虽在脚本中设置为 `google`/`wiki`，但在 verl 管线中不被消费，`simulate_sft` 模式下搜索结果完全由模拟器 LLM 生成，详见 [实验报告.md](实验报告.md) §2.1 注。
 
 ---
 
@@ -65,7 +65,7 @@ GRPO 3B 与 7B 老师 EM 均值仅差 3%（0.444 vs 0.457），F1 差 5%（0.453
 
 OPD 3B EM 0.327，仅达老师（0.457）的 **72%**：
 - 距离老师仍有 13 个点的 EM 缺口
-- 可能原因：① lr=1e-6 + 95% warmup 过保守，400 步内学生未充分逼近老师；② OPD 在所有 5 条 rollout 上无差别蒸馏，而 GRPO 只奖励高优势样本，信号效率更高；③ 模拟器/老师/语料三方不匹配（google 模拟器 + google 老师 + wiki 语料）
+- 可能原因：① lr=1e-6 + 95% warmup 过保守，400 步内学生未充分逼近老师（主因）；② 学生用 3B 模拟器、老师训练时可能用 14B 模拟器，规模不一致导致老师 log-prob 噪声偏大（待验证，权重低于①）。**注：早先版本曾归因"google/wiki 语料三方不匹配"和"无差别蒸馏"，经代码追踪后弃用——`search_engine` 在 verl 管线中是死代码，`simulate_sft` 模式下不存在 google/wiki 维度的偏移；"无差别蒸馏"是 on-policy 蒸馏的设计优势而非缺陷。详见 [实验报告.md](实验报告.md) §5.3。**
 
 ### 3.3 OPD 全面超过基线
 

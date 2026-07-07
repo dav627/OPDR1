@@ -47,6 +47,9 @@ DATA_PATH="${DATA_PATH:-/root/autodl-tmp/data/ZeroSearch_dataset}"
 # 训练参数
 NUM_GPUS="${NUM_GPUS:-1}"
 SEARCH_MODE="${SEARCH_MODE:-simulate_sft}"
+# 注：SEARCH_ENGINE 在 verl 管线中是死代码（仅独立脚本 inference.py 消费）。
+# simulate_sft 模式下搜索结果由模拟器 LLM 生成、prompt 硬编码 "You are the Google search engine"，
+# 与 SEARCH_ENGINE 取值无关。保留供未来切换到真实检索模式时使用。
 SEARCH_ENGINE="${SEARCH_ENGINE:-wiki}"
 START_THRESHOLD="${START_THRESHOLD:-0}"
 END_THRESHOLD="${END_THRESHOLD:-0.5}"

@@ -47,8 +47,11 @@ DATA_PATH="${DATA_PATH:-/root/autodl-tmp/data/ZeroSearch_dataset}"
 
 # 训练参数
 NUM_GPUS="${NUM_GPUS:-1}"
-SEARCH_MODE="${SEARCH_MODE:-simulate_sft}"   # simulate_sft = 用微调版模拟器
-SEARCH_ENGINE="${SEARCH_ENGINE:-wiki}"       # wiki 不需要 API key
+SEARCH_MODE="${SEARCH_MODE:-simulate_sft}"   # simulate_sft = 用微调版模拟器 LLM 生成检索结果（不调真实 API）
+# 注：SEARCH_ENGINE 在 verl 管线中是死代码（仅独立脚本 inference.py 消费）。
+# simulate_sft 模式下搜索结果由模拟器 LLM 生成、prompt 硬编码 "You are the Google search engine"，
+# 与 SEARCH_ENGINE 取值无关。保留此变量供未来切换到真实检索（google=serpapi / wiki=e5+Wikipedia）时使用。
+SEARCH_ENGINE="${SEARCH_ENGINE:-wiki}"
 START_THRESHOLD="${START_THRESHOLD:-0}"
 END_THRESHOLD="${END_THRESHOLD:-0.5}"
 MAX_TURNS="${MAX_TURNS:-5}"
@@ -187,8 +190,8 @@ run_training() {
     print_info "学生模型: $STUDENT_MODEL"
     print_info "数据集: $DATA_PATH"
     print_info "总步数: $TOTAL_STEPS"
-    print_info "搜索模式: $SEARCH_MODE (模拟器)"
-    print_info "搜索后端: $SEARCH_ENGINE"
+    print_info "搜索模式: $SEARCH_MODE (模拟器 LLM 生成检索，不调真实 API)"
+    print_info "注: SEARCH_ENGINE=$SEARCH_ENGINE 在 verl 管线中不被消费（simulate_sft 模式下死代码）"
     print_info "日志: 训练输出直接打印，同时写 wandb"
 
     # 确认模拟器可达

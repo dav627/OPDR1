@@ -211,7 +211,7 @@ eval_model() {
         retriever.end_threshold=0.5 \
         retriever.llm_ip=${SIMULATOR_IP}:${SIMULATOR_PORT} \
         retriever.search_mode=simulate_sft \
-        retriever.search_engine=google \
+        retriever.search_engine=google `# 死代码: verl 管线不消费此参数, simulate_sft 模式下搜索结果由模拟器 LLM 生成` \
         retriever.topk=5 \
         retriever.simulate_llm=${SIMULATOR_MODEL} 2>&1 | tee "$log_file"
 

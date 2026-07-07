@@ -38,7 +38,7 @@ bash train_grpo.sh \
 - `$14` SIMULATION_LLM = SearchSimulation_3B
 - `$16` START_THRESHOLD = 0.0
 - `$18` END_THRESHOLD = 0.5
-- `$20` SEARCH_ENGINE = wiki
+- `$20` SEARCH_ENGINE = wiki（**注：此参数在 verl 管线中不被消费，仅在独立脚本 `inference.py` 中生效；`simulate_sft` 模式下搜索结果由模拟器 LLM 生成，与此参数无关。保留供未来切换到真实检索模式时使用**）
 - `$22` MAX_TURNS = 5
 - `$24` TOPK = 5
 
@@ -77,7 +77,7 @@ bash train_opd.sh \
 - `$16` SIMULATION_LLM = SearchSimulation_3B
 - `$18` START_THRESHOLD = 0.0
 - `$20` END_THRESHOLD = 0.5
-- `$22` SEARCH_ENGINE = wiki
+- `$22` SEARCH_ENGINE = wiki（**注：verl 管线中不被消费，详见上文同名参数注**）
 - `$24` MAX_TURNS = 5
 - `$26` TOPK = 5
 
