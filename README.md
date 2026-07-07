@@ -21,7 +21,7 @@
 2. **OPD 未达老师上限**：只到老师 72%，蒸馏超参（lr=1e-6 + 95% warmup）和配置（google 模拟器 + wiki 语料）未充分利用老师信号。
 3. **多跳任务差距最大**：单跳老师仍领先 +1-3%，多跳 GRPO 反超——RL 学到的是推理链路而非记忆。
 
-详细数字见 [EVAL_RESULTS.md](EVAL_RESULTS.md)。
+详细数字见 [docs/EVAL_RESULTS.md](docs/EVAL_RESULTS.md)，完整分析与下一轮调整预期见 [docs/实验报告.md](docs/实验报告.md)。
 
 ---
 
@@ -53,17 +53,19 @@ OPDR1/
 │   └── WANDB_GUIDE.md       # wandb 配置说明
 ├── tests/
 │   └── test_opd_logic.py    # OPD 损失逻辑单元测试
-├── docs/images/             # wandb 截图（smoke/full 训练曲线）
-│   ├── opd_full/            # OPD 正式训练 wandb 曲线
-│   ├── opd_smoke/           # OPD smoke 验证
-│   └── smoke_c2/            # GRPO smoke 验证
+├── docs/                    # 所有文档（除 README）
+│   ├── 实验报告.md           # **主报告**：实验设置/过程/结果/分析/下一轮预期
+│   ├── EVAL_RESULTS.md      # 评测结果原始数据 + 简历 bullet
+│   ├── PLAN.md              # 实施计划、代码地图、改动日志、已知坑清单
+│   ├── EXPECTATIONS.md      # 实验预期与论文调研
+│   ├── OPD实验实现文档.md    # 原始实现文档（环境配置、同步流程）
+│   ├── COMMANDS.md          # 训练命令参考（参数映射）
+│   └── images/              # wandb 截图（smoke/full 训练曲线）
+│       ├── opd_full/        # OPD 正式训练 wandb 曲线
+│       ├── opd_smoke/       # OPD smoke 验证
+│       └── smoke_c2/        # GRPO smoke 验证
 ├── config.a800.sh           # A800 80GB 单卡预设
 ├── config.local.sh.example  # 本地配置模板（复制为 config.local.sh）
-├── COMMANDS.md              # 训练命令参考（含参数映射）
-├── PLAN.md                  # 实施计划与代码地图
-├── OPD实验实现文档.md        # 原始实现文档
-├── EXPECTATIONS.md          # 实验预期与调研
-├── EVAL_RESULTS.md          # 评测结果（含原始数据）
 └── README.md                # 本文件
 ```
 
@@ -345,13 +347,16 @@ open https://wandb.ai/<user>/ZeroSearch
 
 ## 8. 文档索引
 
+所有文档位于 `docs/` 目录下（除本 README）。
+
 | 文档 | 内容 |
 |------|------|
-| [PLAN.md](PLAN.md) | 实施计划、代码地图、改动日志、已知坑清单 |
-| [OPD实验实现文档.md](OPD实验实现文档.md) | 原始实现文档（环境配置、同步流程） |
-| [EXPECTATIONS.md](EXPECTATIONS.md) | 实验预期与论文调研 |
-| [EVAL_RESULTS.md](EVAL_RESULTS.md) | 评测结果原始数据 + 简历 bullet |
-| [COMMANDS.md](COMMANDS.md) | 训练命令参考（参数映射） |
+| [docs/实验报告.md](docs/实验报告.md) | **主报告**：实验设置 → 实现 → 结果 → 分析 → 下一轮预期 |
+| [docs/EVAL_RESULTS.md](docs/EVAL_RESULTS.md) | 评测结果原始数据 + 简历 bullet |
+| [docs/PLAN.md](docs/PLAN.md) | 实施计划、代码地图、改动日志、已知坑清单 |
+| [docs/EXPECTATIONS.md](docs/EXPECTATIONS.md) | 实验预期与论文调研 |
+| [docs/OPD实验实现文档.md](docs/OPD实验实现文档.md) | 原始实现文档（环境配置、同步流程） |
+| [docs/COMMANDS.md](docs/COMMANDS.md) | 训练命令参考（参数映射） |
 | [scripts/README.md](scripts/README.md) | 脚本使用说明 |
 | [scripts/WANDB_GUIDE.md](scripts/WANDB_GUIDE.md) | wandb 配置与关键指标 |
 
