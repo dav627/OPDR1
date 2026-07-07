@@ -42,7 +42,7 @@ fi
 
 # 模型与数据路径（按 AutoDL 约定）
 STUDENT_MODEL="${STUDENT_MODEL:-/root/autodl-tmp/models/Qwen2.5-3B-Instruct}"
-SIMULATOR_MODEL="${SIMULATOR_MODEL:-/root/autodl-tmp/models/Simulation_LLM_wiki_3B_V2}"
+SIMULATOR_MODEL="${SIMULATOR_MODEL:-/root/autodl-tmp/models/Simulation_LLM_google_3B}"
 DATA_PATH="${DATA_PATH:-/root/autodl-tmp/data/ZeroSearch_dataset}"
 
 # 训练参数
