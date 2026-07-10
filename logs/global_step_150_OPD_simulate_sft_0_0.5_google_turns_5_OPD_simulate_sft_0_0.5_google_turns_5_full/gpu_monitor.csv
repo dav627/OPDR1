@@ -1,0 +1,3 @@
+timestamp,memory.used_MiB,memory.total_MiB,utilization_pct,temperature_C
+1783209183,12732,,81920,,0,,33
+1783209213,27864,,81920,,8,,34

@@ -1,0 +1,24 @@
+=== 训练环境快照 ===
+时间: Sat Jul  4 18:56:32 CST 2026
+主机: autodl-container-c912489c17-1bcfffe7
+conda 环境: rl-opd
+
+=== Git 状态 ===
+6246c8e 修正教师模型：Search-R1-Qwen2.5-7B-GRPO → ZeroSearch_google_V2_Qwen2.5_7B_Instruct
+?? ZeroSearch/outputs/
+?? scripts/.ipynb_checkpoints/
+
+=== GPU 信息 ===
+NVIDIA A800 80GB PCIe, 81920 MiB, 580.82.07
+
+=== Python 包版本 ===
+/root/miniconda3/envs/rl-opd/lib/python3.9/site-packages/vllm/connections.py:8: RuntimeWarning: Failed to read commit hash:
+No module named 'vllm._version'
+  from vllm.version import __version__ as VLLM_VERSION
+torch: 2.4.0+cu121
+CUDA: 12.1
+GPU: NVIDIA A800 80GB PCIe
+transformers: 4.47.1
+vllm: dev
+flash_attn: 2.6.3
+verl: OK

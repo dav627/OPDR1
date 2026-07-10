@@ -1,0 +1,26 @@
+=== 训练环境快照 ===
+时间: Sun Jul  5 07:47:06 CST 2026
+主机: autodl-container-c912489c17-1bcfffe7
+conda 环境: rl-opd
+
+=== Git 状态 ===
+814f4be 修复磁盘满崩溃：save_freq 环境变量化 + 实验名去除完整路径
+?? ZeroSearch/outputs/
+?? scripts/.ipynb_checkpoints/
+
+=== GPU 信息 ===
+NVIDIA A800 80GB PCIe, 81920 MiB, 580.82.07
+
+=== Python 包版本 ===
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+/root/miniconda3/envs/rl-opd/lib/python3.9/site-packages/vllm/connections.py:8: RuntimeWarning: Failed to read commit hash:
+No module named 'vllm._version'
+  from vllm.version import __version__ as VLLM_VERSION
+torch: 2.4.0+cu121
+CUDA: 12.1
+GPU: NVIDIA A800 80GB PCIe
+transformers: 4.47.1
+vllm: dev
+flash_attn: 2.6.3
+verl: OK
