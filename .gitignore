@@ -5,12 +5,11 @@ __pycache__/
 *.egg-info/
 .DS_Store
 
-# 训练日志与 checkpoint（不入版本控制）
-logs/
+# checkpoint 与 wandb 缓存（大文件, 不入版本控制）
 ZeroSearch/verl_checkpoints/
 ZeroSearch/wandb/
 
-# 本地配置（每台服务器不同，不入版本控制）
+# 本地配置（每台服务器不同, 不入版本控制）
 config.local.sh
 
 # 第三方仓库已纳入版本控制
